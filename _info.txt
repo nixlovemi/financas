@@ -1,0 +1,21 @@
+EXEMPLO DE TRIGGER MYSQL
+========================
+
+delimiter |
+
+CREATE TRIGGER `trig_tb_venda_itens_vda_totais_AI` AFTER INSERT ON `tb_venda_itens`
+ FOR EACH ROW BEGIN
+    DECLARE vTotItens INT;
+    DECLARE vVlrItens DOUBLE;
+
+    SET vTotItens = (SELECT COALESCE(SUM(`vdi_qtde`), 0) FROM `tb_venda_itens` WHERE `vdi_vda_id` = NEW.vdi_vda_id);
+
+    SET vVlrItens = (SELECT COALESCE(SUM(`vdi_total`), 0) FROM `tb_venda_itens` WHERE `vdi_vda_id` = NEW.vdi_vda_id);
+
+    UPDATE tb_venda SET vda_tot_itens = vTotItens, vda_vlr_itens = vVlrItens WHERE vda_id = NEW.vdi_vda_id;
+  END
+|
+
+delimiter ;
+
+========================
