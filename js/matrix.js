@@ -116,60 +116,16 @@ $(document).on('change', '#frmRelatorios #cbRelatorios', function(){
     });
   }
 });
-
-$(document).on('click', '#postRelFluxoCx', function(){
-  var frmVariaveis = $("#frmInfoRelFluxoCx").serialize();
-  var dvRet        = $("#dvPostRelFluxoCx");
-
-  $.ajax({
-    type: "POST",
-    url: HOME_URL + 'Relatorio/postRelFluxoCx',
-    data: frmVariaveis,
-    beforeSend: function(){
-      dvRet.html(getHtmlLoader());
-    },
-    success: function (ret) {
-      dvRet.html(ret);
-      setTimeout("loadObjects()", 350);
-    }
-  });
-});
-
-$(document).on('click', 'a#opnDetRelFluxoCx', function(){
-  var tipo = $(this).data("tipo");
-  var dia  = $(this).data("dia");
-
-  $.ajax({
-    type: "POST",
-    url: HOME_URL + 'Relatorio/jsonDetRelFluxoCx',
-    data: 'tipo=' + tipo + '&dia=' + dia,
-		dataType: 'json',
-		success: function (ret) {
-			var erro = ret.erro;
-			var msg  = ret.msg;
-      var html = ret.html;
-
-			if(erro){
-				$.gritter.add({
-					title: 'Alerta',
-					text: msg,
-				});
-			} else {
-				openBootbox(html, false);
-			}
-    }
-  });
-});
 // ===============
 
-// Tb_Funcionario_Escala
-function fncEditarEscala(fueId, calendarClick){
-  calendarClick = typeof calendarClick !== 'undefined' ? calendarClick : false;
+// Lancamentos
+$(document).on('click', '#dvHtmlLancamentos .TbLancamento_ajax_alterar', function(){
+	var lanId = $(this).data("id");
 
   $.ajax({
     type: "POST",
-    url: HOME_URL + 'FuncionarioEscala/jsonHtmlEditEscala',
-    data: 'fueId=' + fueId,
+    url: HOME_URL + 'Lancamentos/jsonHtmlEditLancamento',
+    data: 'lanId=' + lanId,
     dataType: 'json',
     success: function (ret) {
       if(ret.erro){
@@ -182,8 +138,8 @@ function fncEditarEscala(fueId, calendarClick){
       } else {
         var html = ret.html;
         confirmBootbox(html, function(){
-          var variaveis = $("#frmJsonAddFuncEscala").serialize();
-          var retJson   = mvc_post_json_ajax_var('FuncionarioEscala', 'jsonEditFuncEscala', variaveis);
+          var variaveis = $("#frmJsonAddLancamento").serialize();
+          var retJson   = mvc_post_json_ajax_var('Lancamentos', 'jsonEditLancamento', variaveis);
 
           if(retJson.erro){
             $.gritter.add({
@@ -195,32 +151,28 @@ function fncEditarEscala(fueId, calendarClick){
 
             return false;
           } else {
-            if(calendarClick){
-              document.location.href = HOME_URL + 'Funcionario/escala';
-            } else {
-              $("#frmShowEscalaFunc #btnShowEscalaFunc").click();
-            }
+            $("#btnFiltrarLancamentos").click();
           }
         });
         setTimeout("loadObjects()", 750);
       }
     }
   });
-}
+});
 
-$(document).on('click', '#dvRetPostShowEscalaFunc .TbFuncionarioEscala_ajax_deletar', function(){
-	var fueId = $(this).data("id");
-	var html  = 'Gostaria de deletar essa Escala ' + fueId + '?';
+$(document).on('click', '#dvHtmlLancamentos .TbLancamento_ajax_deletar', function(){
+	var lanId = $(this).data("id");
+	var html  = 'Gostaria de deletar o lançamento ' + lanId + '?';
 
 	confirmBootbox(html, function(){
     $.ajax({
       type: "POST",
-      url: HOME_URL + 'FuncionarioEscala/jsonDelEscala',
-      data: 'fueId=' + fueId,
+      url: HOME_URL + 'Lancamentos/jsonDelLancamento',
+      data: 'lanId=' + lanId,
   		dataType: 'json',
   		success: function (ret) {
-  			var erro            = ret.erro;
-  			var msg             = ret.msg;
+  			var erro                = ret.erro;
+  			var msg                 = ret.msg;
 
   			if(erro){
   				$.gritter.add({
@@ -228,72 +180,24 @@ $(document).on('click', '#dvRetPostShowEscalaFunc .TbFuncionarioEscala_ajax_dele
   					text: msg,
   				});
   			} else {
-          $("#frmShowEscalaFunc #btnShowEscalaFunc").click();
+          $("#btnFiltrarLancamentos").click();
   			}
       }
     });
 	});
 });
 
-$(document).on('click', '#dvRetPostShowEscalaFunc .TbFuncionarioEscala_ajax_alterar', function(){
-	var fueId = $(this).data("id");
-  fncEditarEscala(fueId);
-});
-
-$(document).on('click', '#dvRetPostShowEscalaFunc .TbFuncionarioEscala_ajax_add', function(){
-	var funId = $("#frmShowEscalaFunc #ge_funId").val();
-
+$(document).on('click', '#btnJsonAddLancamento', function(){
   $.ajax({
     type: "POST",
-    url: HOME_URL + 'FuncionarioEscala/jsonHtmlAddEscala',
-    data: 'funId=' + funId,
-    dataType: 'json',
-    success: function (ret) {
-      if(ret.erro){
-        $.gritter.add({
-          title: 'Alerta',
-          text: ret.msg,
-        });
-        var maxZindex = getHighIndex();
-        $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
-      } else {
-        var html = ret.html;
-        confirmBootbox(html, function(){
-          var variaveis = $("#frmJsonAddFuncEscala").serialize();
-          var retJson   = mvc_post_json_ajax_var('FuncionarioEscala', 'jsonAddFuncEscala', variaveis);
-
-          if(retJson.erro){
-            $.gritter.add({
-    					title: 'Alerta',
-    					text: retJson.msg,
-    				});
-            var maxZindex = getHighIndex();
-            $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
-
-            return false;
-          } else {
-            $("#frmShowEscalaFunc #btnShowEscalaFunc").click();
-          }
-        });
-        setTimeout("loadObjects()", 750);
-      }
-    }
-  });
-});
-// =====================
-
-// Tb_Cont_Receber
-$(document).on('click', '#btnJsonAddContaReceb', function(){
-  $.ajax({
-    type: "POST",
-    url: HOME_URL + 'ContaReceber/jsonHtmlAddConta',
+    url: HOME_URL + 'Lancamentos/jsonHtmlAddLancamento',
     data: '',
     dataType: 'json',
     success: function (ret) {
       var html = ret.html;
       confirmBootbox(html, function(){
-        var variaveis = $("#frmJsonAddContaReceb").serialize();
-        var retJson   = mvc_post_json_ajax_var('ContaReceber', 'jsonAddContaReceb', variaveis);
+        var variaveis = $("#frmJsonAddLancamento").serialize();
+        var retJson   = mvc_post_json_ajax_var('Lancamentos', 'jsonAddLancamento', variaveis);
 
         if(retJson.erro){
           $.gritter.add({
@@ -305,7 +209,7 @@ $(document).on('click', '#btnJsonAddContaReceb', function(){
 
           return false;
         } else {
-          $("#btnFiltrarRecebimentos").click();
+          $("#btnFiltrarLancamentos").click();
         }
       });
       setTimeout("loadObjects()", 750);
@@ -313,91 +217,22 @@ $(document).on('click', '#btnJsonAddContaReceb', function(){
   });
 });
 
-$(document).on('click', '#dvHtmlContaRecebTable .TbContReceber_ajax_alterar', function(){
-	var ctrId = $(this).data("id");
+$(document).on('click', '#frmFiltrosLancamentos #btnFiltrarLancamentos', function(){
+	var variaveis = $('#frmFiltrosLancamentos').serialize();
 
   $.ajax({
     type: "POST",
-    url: HOME_URL + 'ContaReceber/jsonHtmlEditConta',
-    data: 'ctrId=' + ctrId,
-    dataType: 'json',
-    success: function (ret) {
-      if(ret.erro){
-        $.gritter.add({
-          title: 'Alerta',
-          text: ret.msg,
-        });
-        var maxZindex = getHighIndex();
-        $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
-      } else {
-        var html = ret.html;
-        confirmBootbox(html, function(){
-          var variaveis = $("#frmJsonAddContaReceb").serialize();
-          var retJson   = mvc_post_json_ajax_var('ContaReceber', 'jsonEditContaReceb', variaveis);
-
-          if(retJson.erro){
-            $.gritter.add({
-    					title: 'Alerta',
-    					text: retJson.msg,
-    				});
-            var maxZindex = getHighIndex();
-            $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
-
-            return false;
-          } else {
-            $("#btnFiltrarRecebimentos").click();
-          }
-        });
-        setTimeout("loadObjects()", 750);
-      }
-    }
-  });
-});
-
-$(document).on('click', '#dvHtmlContaRecebTable .TbContReceber_ajax_deletar_v2', function(){
-	var ctrId = $(this).data("id");
-	var html  = 'Gostaria de deletar a parcela ' + ctrId + '?';
-
-	confirmBootbox(html, function(){
-    $.ajax({
-      type: "POST",
-      url: HOME_URL + 'ContaReceber/jsonDelContaReceber',
-      data: 'ctrId=' + ctrId,
-  		dataType: 'json',
-  		success: function (ret) {
-  			var erro                = ret.erro;
-  			var msg                 = ret.msg;
-  			var htmlContaRecebTable = ret.htmlContaRecebTable;
-
-  			if(erro){
-  				$.gritter.add({
-  					title: 'Alerta',
-  					text: msg,
-  				});
-  			} else {
-          $("#frmFiltrosRecebimentos #btnFiltrarRecebimentos").click();
-  			}
-      }
-    });
-	});
-});
-
-$(document).on('click', '#frmFiltrosRecebimentos #btnFiltrarRecebimentos', function(){
-	var variaveis = $('#frmFiltrosRecebimentos').serialize();
-
-  $.ajax({
-    type: "POST",
-    url: HOME_URL + 'ContaReceber/jsonHtmlContasReceber',
+    url: HOME_URL + 'Lancamentos/jsonHtmlLancamentos',
     data: variaveis,
 		dataType: 'json',
     beforeSend: function(){
       var htmlLoader = getHtmlLoader();
-      $("#dvHtmlContaRecebTable").html(htmlLoader);
+      $("#dvHtmlLancamentos").html(htmlLoader);
     },
 		success: function (ret) {
 			var erro            = ret.erro;
 			var msg             = ret.msg;
-			var htmlContasReceb = ret.htmlContasReceb;
+			var htmlLancamentos = ret.htmlLancamentos;
 
 			if(erro){
 				$.gritter.add({
@@ -405,201 +240,13 @@ $(document).on('click', '#frmFiltrosRecebimentos #btnFiltrarRecebimentos', funct
 					text: msg,
 				});
 			} else {
-        $("#dvHtmlContaRecebTable").html(htmlContasReceb);
+        $("#dvHtmlLancamentos").html(htmlLancamentos);
         setTimeout("loadObjects();", 500);
 			}
     }
   });
 });
-// ===============
-
-// Tb_Cont_Pagar
-$(document).on('click', '#frmFiltrosPagamentos #btnFiltrarPagamentos', function(){
-	var variaveis = $('#frmFiltrosPagamentos').serialize();
-
-  $.ajax({
-    type: "POST",
-    url: HOME_URL + 'ContaPagar/jsonHtmlContasPagar',
-    data: variaveis,
-		dataType: 'json',
-    beforeSend: function(){
-      var htmlLoader = getHtmlLoader();
-      $("#dvhtmlContasPagarTable").html(htmlLoader);
-    },
-		success: function (ret) {
-			var erro            = ret.erro;
-			var msg             = ret.msg;
-			var htmlContasPagar = ret.htmlContasPagar;
-
-			if(erro){
-				$.gritter.add({
-					title: 'Alerta',
-					text: msg,
-				});
-			} else {
-        $("#dvhtmlContasPagarTable").html(htmlContasPagar);
-        setTimeout("loadObjects();", 500);
-			}
-    }
-  });
-});
-
-$(document).on('click', '#btnJsonAddContaPagar', function(){
-  $.ajax({
-    type: "POST",
-    url: HOME_URL + 'ContaPagar/jsonHtmlAddConta',
-    data: '',
-    dataType: 'json',
-    success: function (ret) {
-      var html = ret.html;
-      confirmBootbox(html, function(){
-        var variaveis = $("#frmJsonAddContaPagar").serialize();
-        var retJson   = mvc_post_json_ajax_var('ContaPagar', 'jsonAddContaPagar', variaveis);
-
-        if(retJson.erro){
-          $.gritter.add({
-  					title: 'Alerta',
-  					text: retJson.msg,
-  				});
-          var maxZindex = getHighIndex();
-          $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
-
-          return false;
-        } else {
-          $("#btnFiltrarPagamentos").click();
-        }
-      });
-      setTimeout("loadObjects()", 750);
-    }
-  });
-});
-
-$(document).on('click', '#dvhtmlContasPagarTable .TbContPagar_ajax_deletar', function(){
-	var ctpId = $(this).data("id");
-	var html  = 'Gostaria de deletar o pagamento ' + ctpId + '?';
-
-	confirmBootbox(html, function(){
-    $.ajax({
-      type: "POST",
-      url: HOME_URL + 'ContaPagar/jsonDelContaPagar',
-      data: 'ctpId=' + ctpId,
-  		dataType: 'json',
-  		success: function (ret) {
-  			var erro                = ret.erro;
-  			var msg                 = ret.msg;
-  			var htmlContaPagarTable = ret.htmlContaPagarTable;
-
-  			if(erro){
-  				$.gritter.add({
-  					title: 'Alerta',
-  					text: msg,
-  				});
-  			} else {
-          $("#frmFiltrosPagamentos #btnFiltrarPagamentos").click();
-  			}
-      }
-    });
-	});
-});
-
-$(document).on('click', '#dvhtmlContasPagarTable .TbContReceber_ajax_alterar', function(){
-	var ctpId = $(this).data("id");
-
-  $.ajax({
-    type: "POST",
-    url: HOME_URL + 'ContaPagar/jsonHtmlEditPagamento',
-    data: 'ctpId=' + ctpId,
-    dataType: 'json',
-    success: function (ret) {
-      if(ret.erro){
-        $.gritter.add({
-          title: 'Alerta',
-          text: ret.msg,
-        });
-        var maxZindex = getHighIndex();
-        $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
-      } else {
-        var html = ret.html;
-        confirmBootbox(html, function(){
-          var variaveis = $("#frmJsonAddContaPagar").serialize();
-          var retJson   = mvc_post_json_ajax_var('ContaPagar', 'jsonEditContaPagar', variaveis);
-
-          if(retJson.erro){
-            $.gritter.add({
-    					title: 'Alerta',
-    					text: retJson.msg,
-    				});
-            var maxZindex = getHighIndex();
-            $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
-
-            return false;
-          } else {
-            $("#btnFiltrarPagamentos").click();
-          }
-        });
-        setTimeout("loadObjects()", 750);
-      }
-    }
-  });
-});
-// =============
-
-// Tb_Cliente
-$(document).on('click', '.TbCliente_deletar', function(){
-	var cliId = $(this).data("id");
-	var html  = 'Gostaria de deletar o cliente ID ' + cliId + '?';
-
-	confirmBootbox(html, function(){
-		document.location.href = HOME_URL + 'Cliente/deletar/' + cliId;
-	});
-});
-// ==========
-
-// Tb_Funcionario
-$(document).on('click', '.TbFuncionario_deletar', function(){
-	var funId = $(this).data("id");
-	var html  = 'Gostaria de deletar o funcionario ID ' + funId + '?';
-
-	confirmBootbox(html, function(){
-		document.location.href = HOME_URL + 'Funcionario/deletar/' + funId;
-	});
-});
-
-function openGerEscalas(){
-  var retJson = mvc_post_json_ajax_var('Funcionario', 'jsonGerenciarEscalas', '');
-  if(retJson.erro){
-    $.gritter.add({
-      title: 'Alerta',
-      text: retJson.msg,
-    });
-    var maxZindex = getHighIndex();
-    $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
-  } else {
-    openBootbox(retJson.html, false, false, false, function(){
-      document.location.href = HOME_URL + 'Funcionario/escala';
-    });
-
-    setTimeout("loadObjects()", 500);
-  }
-}
-
-function showEscalaFunc(){
-  var params  = $('#frmShowEscalaFunc').serialize();
-  var retJson = mvc_post_json_ajax_var('Funcionario', 'jsonPostShowEscalaFunc', params);
-
-  if(retJson.erro){
-    $.gritter.add({
-      title: 'Alerta',
-      text: retJson.msg,
-    });
-    var maxZindex = getHighIndex();
-    $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
-  } else {
-    $("#dvRetPostShowEscalaFunc").html(retJson.html);
-    setTimeout("loadObjects()", 500);
-  }
-}
-// ==========
+// ===========
 
 function loadObjects(){
   $('.dynatable').dynatable({

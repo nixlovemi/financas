@@ -1,12 +1,13 @@
 <?php
-$htmlContaRecebTable = isset($htmlContaRecebTable) ? $htmlContaRecebTable: "";
-$arrClientes         = isset($arrClientes) ? $arrClientes: array();
-$arrVendedores       = isset($arrVendedores) ? $arrVendedores: array();
+$htmlLancamentos = isset($htmlLancamentos) ? $htmlLancamentos: "";
+$arrContas       = isset($arrContas) ? $arrContas: array();
+$arrBaseDesp     = isset($arrBaseDesp) ? $arrBaseDesp: array();
 ?>
 
-<h1>Recebimentos</h1>
+<h1>Lançamentos</h1>
 
-<a class="btn btn-info btn-large" href="javascript:;" id="btnJsonAddContaReceb">NOVO RECEBIMENTO</a>
+<a class="btn btn-info btn-large" href="javascript:;" id="btnJsonAddLancamento">NOVO LANÇAMENTO</a>
+<a class="btn btn-info btn-large" href="javascript:;" id="">NOVA TRANSFERÊNCIA</a>
 
 <?php
 if(isset($errorMsg) && $errorMsg != ""){
@@ -25,7 +26,7 @@ if(isset($errorMsg) && $errorMsg != ""){
   </div>
   <div class="accordion-body collapse" id="collapseGOne" style="height: 0px;">
     <div class="widget-content nopadding">
-      <form id="frmFiltrosRecebimentos" class="form-horizontal">
+      <form id="frmFiltrosLancamentos" class="form-horizontal">
         <div class="control-group">
           <label class="control-label">Vencimento</label>
           <div class="controls">
@@ -43,44 +44,53 @@ if(isset($errorMsg) && $errorMsg != ""){
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label">Cliente</label>
+          <label class="control-label">Contas</label>
           <div class="controls">
-            <?php
-            echo "<select class='span6 m-wrap' name='filterCliente' id='filterCliente'>";
-            echo "<option value=''></option>";
-            foreach($arrClientes as $Cliente){
-              $cliId    = $Cliente["cli_id"];
-              $cliNome  = $Cliente["cli_nome"];
-              $selected = ($vVdaCliId == $cliId) ? " selected ": "";
+            <select class='span6 m-wrap' name='filterContas' id='filterContas'>
+              <option value=''></option>
+              <?php
+              foreach($arrContas as $conta){
+                $conId  = $conta["con_id"];
+                $conDes = "[" . $conta["con_sigla"] . "] " . $conta["con_nome"];
 
-              echo "<option $selected value='$cliId'>$cliNome</option>";
-            }
-            echo "</select>";
-            ?>
+                echo "<option value='$conId'>$conDes</option>";
+              }
+              ?>
+            </select>
           </div>
         </div>
         <div class="control-group">
-          <label class="control-label">Vendedor</label>
+          <label class="control-label">Tipo</label>
           <div class="controls">
-            <?php
-            echo "<select class='span6 m-wrap' name='filterVendedor' id='filterVendedor'>";
-            echo "<option value=''></option>";
-            foreach($arrVendedores as $Vendedor){
-              $venId    = $Vendedor["ven_id"];
-              $venNome  = $Vendedor["ven_nome"];
-              $selected = ($vVdaVenId == $venId) ? " selected ": "";
+            <select class='span6 m-wrap' name='filterTipo' id='filterTipo'>
+              <option value=''></option>
+              <option value='R'>Receita</option>
+              <option value='D'>Despesa</option>
+              <option value='T'>Transferência</option>
+            </select>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">Categoria</label>
+          <div class="controls">
+            <select class='span6 m-wrap' name='filterCategoria' id='filterCategoria'>
+              <option value=''></option>
+              <?php
+              foreach($arrBaseDesp as $categoria){
+                $bdpId  = $categoria["bdp_id"];
+                $bdpDes = $categoria["bdp_descricao"];
 
-              echo "<option $selected value='$venId'>$venNome</option>";
-            }
-            echo "</select>";
-            ?>
+                echo "<option value='$bdpId'>$bdpDes</option>";
+              }
+              ?>
+            </select>
           </div>
         </div>
         <div class="control-group">
           <label class="control-label">Exibir</label>
           <div class="controls">
             <select class='span6 m-wrap' name='filterApenasPagas' id='filterApenasPagas'>
-              <option value=''>Todas os Recebimentos</option>
+              <option value=''>Todos os Lançamentos</option>
               <option value='S'>Apenas Pagos</option>
               <option value='N'>Apenas não Pagos</option>
             </select>
@@ -88,7 +98,7 @@ if(isset($errorMsg) && $errorMsg != ""){
         </div>
         <div class="control-group" style="padding:8px 0;">
           <center>
-            <a class="btn btn-info" href="javascript:;" id="btnFiltrarRecebimentos">FILTRAR</a>
+            <a class="btn btn-info" href="javascript:;" id="btnFiltrarLancamentos">FILTRAR</a>
           </center>
         </div>
       </form>
@@ -98,11 +108,11 @@ if(isset($errorMsg) && $errorMsg != ""){
 
 <div class="widget-box">
   <div class="widget-title"> <span class="icon"><i class="icon icon-money"></i></span>
-    <h5>Lista de recebimentos</h5>
+    <h5>Lançamentos</h5>
   </div>
-  <div class="widget-content nopadding" id="dvHtmlContaRecebTable">
+  <div class="widget-content nopadding" id="dvHtmlLancamentos">
     <?php
-    echo $htmlContaRecebTable;
+    echo $htmlLancamentos;
     ?>
   </div>
 </div>

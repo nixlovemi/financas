@@ -1,0 +1,492 @@
+<?php
+class Tb_Lancamento extends CI_Model {
+  public function getHtmlLancamentos($arrFilters=array(), $edit=true){
+    // filtros
+    $vVctoIni   = isset($arrFilters["vctoIni"]) ? $arrFilters["vctoIni"]: "";
+    $vVctoFim   = isset($arrFilters["vctoFim"]) ? $arrFilters["vctoFim"]: "";
+    $vPgtoIni   = isset($arrFilters["pgtoIni"]) ? $arrFilters["pgtoIni"]: "";
+    $vPgtoFim   = isset($arrFilters["pgtoFim"]) ? $arrFilters["pgtoFim"]: "";
+    $vConta     = isset($arrFilters["conta"]) ? $arrFilters["conta"]: "";
+    $vTipo      = isset($arrFilters["tipo"]) ? $arrFilters["tipo"]: "";
+    $vCategoria = isset($arrFilters["categoria"]) ? $arrFilters["categoria"]: "";
+    $vPagas     = isset($arrFilters["apenasPagas"]) ? $arrFilters["apenasPagas"]: "";
+    // =======
+
+    // sql filter
+    $sqlFilter = "";
+
+    if($vVctoIni != ""){
+      $sqlFilter .= " AND lan_vencimento >= '$vVctoIni' ";
+    }
+
+    if($vVctoFim != ""){
+      $sqlFilter .= " AND lan_vencimento <= '$vVctoFim' ";
+    }
+
+    if($vPgtoIni != ""){
+      $sqlFilter .= " AND lan_pagamento >= '$vPgtoIni' ";
+    }
+
+    if($vPgtoFim != ""){
+      $sqlFilter .= " AND lan_pagamento <= '$vPgtoFim' ";
+    }
+
+    if(is_numeric($vConta)){
+      $sqlFilter .= " AND lan_conta = $vConta ";
+    }
+
+    if($vTipo != ""){
+      $sqlFilter .= " AND lan_tipo = '$vTipo' ";
+    }
+
+    if(is_numeric($vCategoria)){
+      $sqlFilter .= " AND lan_categoria = $vCategoria ";
+    }
+
+    if($vPagas == "S"){
+      $sqlFilter .= " AND lan_pagamento IS NOT NULL ";
+    } else if ($vPagas == "N"){
+      $sqlFilter .= " AND lan_pagamento IS NULL ";
+    }
+    // ==========
+
+    $this->load->database();
+    $htmlTable  = "";
+    $htmlTable .= "<table class='table table-bordered dynatable' id='tbProdutoGetHtmlList'>";
+    $htmlTable .= "  <thead>";
+    $htmlTable .= "    <tr>";
+    $htmlTable .= "      <th>ID</th>";
+    $htmlTable .= "      <th>Descrição</th>";
+    $htmlTable .= "      <th>Tipo</th>";
+    $htmlTable .= "      <th>Parcela</th>";
+    $htmlTable .= "      <th>Vencimento</th>";
+    $htmlTable .= "      <th>Valor</th>";
+    $htmlTable .= "      <th>Categoria</th>";
+    $htmlTable .= "      <th>Pagamento</th>";
+    $htmlTable .= "      <th>Valor Pg</th>";
+    $htmlTable .= "      <th>Conta</th>";
+    if($edit){
+      $htmlTable .= "    <th width='7%'>Alterar</th>";
+      $htmlTable .= "    <th width='7%'>Deletar</th>";
+    }
+    $htmlTable .= "    </tr>";
+    $htmlTable .= "  </thead>";
+    $htmlTable .= "  <tbody>";
+
+    $vSql  = " SELECT lan_id ";
+    $vSql .= "        , lan_despesa ";
+    $vSql .= "        , CASE
+                          WHEN lan_tipo = 'D' THEN \"Despesa\"
+                          WHEN lan_tipo = 'R' THEN \"Receita\"
+                          WHEN lan_tipo = 'T' THEN \"Transferência\"
+                          ELSE \"**\"
+                      END AS tipo ";
+    $vSql .= "        , lan_parcela_nr ";
+    $vSql .= "        , lan_vencimento ";
+    $vSql .= "        , lan_valor ";
+    $vSql .= "        , bdp_descricao ";
+    $vSql .= "        , lan_pagamento ";
+    $vSql .= "        , lan_valor_pago ";
+    $vSql .= "        , con_sigla ";
+    $vSql .= " FROM tb_lancamento ";
+    $vSql .= " LEFT JOIN tb_base_despesa ON bdp_id = lan_categoria ";
+    $vSql .= " LEFT JOIN tb_conta ON con_id = lan_conta ";
+    $vSql .= " WHERE 1=1 ";
+    $vSql .= " $sqlFilter ";
+    $vSql .= " ORDER BY lan_vencimento ";
+
+    $query = $this->db->query($vSql);
+    $arrRs = $query->result_array();
+
+    if(count($arrRs) <= 0){
+    } else {
+      foreach($arrRs as $rs1){
+        $lanId      = $rs1["lan_id"];
+        $lanDespesa = $rs1["lan_despesa"];
+        $tipo       = $rs1["tipo"];
+        $parcNr     = $rs1["lan_parcela_nr"];
+        $lanVcto    = (strlen($rs1["lan_vencimento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_vencimento"])): "";
+        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "R$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
+        $despesa    = $rs1["bdp_descricao"];
+        $lanPgto    = (strlen($rs1["lan_pagamento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_pagamento"])): "";
+        $lanVlrPg   = (is_numeric($rs1["lan_valor_pago"])) ? "R$ " . number_format($rs1["lan_valor_pago"], 2, ",", "."): "";
+        $conta      = $rs1["con_sigla"];
+
+        $htmlTable .= "<tr>";
+        $htmlTable .= "  <td>$lanId</td>";
+        $htmlTable .= "  <td>$lanDespesa</td>";
+        $htmlTable .= "  <td>$tipo</td>";
+        $htmlTable .= "  <td>$parcNr</td>";
+        $htmlTable .= "  <td>$lanVcto</td>";
+        $htmlTable .= "  <td>$lanValor</td>";
+        $htmlTable .= "  <td>$despesa</td>";
+        $htmlTable .= "  <td>$lanPgto</td>";
+        $htmlTable .= "  <td>$lanVlrPg</td>";
+        $htmlTable .= "  <td>$conta</td>";
+        if($edit){
+          $htmlTable .= "<td><a href='javascript:;' class='TbLancamento_ajax_alterar' data-id='$lanId'><i class='icon-edit icon-lista'></i></a></td>";
+          $htmlTable .= "<td><a href='javascript:;' class='TbLancamento_ajax_deletar' data-id='$lanId'><i class='icon-trash icon-lista'></i></a></td>";
+        }
+        $htmlTable .= "</tr>";
+      }
+    }
+
+    $htmlTable .= "  </tbody>";
+    $htmlTable .= "</table>";
+
+    return $htmlTable;
+  }
+
+  public function getLancamento($lanId){
+    $arrRet         = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "";
+    $arrRet["arrLancamentoDados"] = array();
+
+    if(!is_numeric($lanId)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "ID inválido para buscar a parcela!";
+      return $arrRet;
+    }
+
+    $this->load->database();
+    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_id_parcela, lan_parcela_nr, lan_vencimento, lan_valor, lan_categoria, bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao");
+    $this->db->from("tb_lancamento");
+    $this->db->join("tb_base_despesa", "bdp_id = lan_categoria", "left");
+    $this->db->join("tb_conta", "con_id = lan_conta", "left");
+    $this->db->where("lan_id", $lanId);
+    $query = $this->db->get();
+
+    if($query->num_rows() > 0){
+      $row = $query->row();
+
+      switch ($row->lan_tipo) {
+        case 'D':
+          $strTipo = "Despesa";
+          break;
+        case 'R':
+          $strTipo = "Receita";
+          break;
+        case 'T':
+            $strTipo = "Transferência";
+            break;
+        default:
+          $strTipo = "";
+          break;
+      }
+
+      $arrLancamentoDados = [];
+      $arrLancamentoDados["lan_id"]         = $row->lan_id;
+      $arrLancamentoDados["lan_despesa"]    = $row->lan_despesa;
+      $arrLancamentoDados["lan_tipo"]       = $row->lan_tipo;
+      $arrLancamentoDados["str_tipo"]       = $strTipo;
+      $arrLancamentoDados["lan_id_parcela"] = $row->lan_id_parcela;
+      $arrLancamentoDados["lan_parcela_nr"] = $row->lan_parcela_nr;
+      $arrLancamentoDados["lan_vencimento"] = $row->lan_vencimento;
+      $arrLancamentoDados["lan_valor"]      = $row->lan_valor;
+      $arrLancamentoDados["lan_categoria"]  = $row->lan_categoria;
+      $arrLancamentoDados["bdp_descricao"]  = $row->bdp_descricao;
+      $arrLancamentoDados["lan_pagamento"]  = $row->lan_pagamento;
+      $arrLancamentoDados["lan_valor_pago"] = $row->lan_valor_pago;
+      $arrLancamentoDados["lan_conta"]      = $row->lan_conta;
+      $arrLancamentoDados["con_nome"]       = $row->con_nome;
+      $arrLancamentoDados["con_sigla"]      = $row->con_sigla;
+      $arrLancamentoDados["lan_observacao"] = $row->lan_observacao;
+
+      $arrRet["arrLancamentoDados"] = $arrLancamentoDados;
+    }
+
+    $arrRet["erro"] = false;
+    return $arrRet;
+  }
+
+  private function validaInsert($arrLancamentoDados){
+    $this->load->helper('utils');
+
+    $arrRet         = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "";
+
+    $vDespesa = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: "";
+    if( strlen($vDespesa) < 3 ){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe a descrição do lançamento!";
+      return $arrRet;
+    }
+
+    $vTipo = isset($arrLancamentoDados["lan_tipo"]) ? $arrLancamentoDados["lan_tipo"]: "";
+    $arrTiposValidos = array("R", "D", "T");
+    if(!in_array($vTipo, $arrTiposValidos)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe o tipo do lançamento!";
+      return $arrRet;
+    }
+
+    $vVencimento = (isset($arrLancamentoDados["lan_vencimento"])) ? $arrLancamentoDados["lan_vencimento"]: "";
+    $isVctoValid = isValidDate($vVencimento, "Y-m-d");
+    if(!$isVctoValid){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe uma data de vencimento válida!";
+      return $arrRet;
+    }
+
+    $vValor = (isset($arrLancamentoDados["lan_valor"])) ? (float)$arrLancamentoDados["lan_valor"]: "";
+    if(!is_numeric($vValor) || !$vValor > 0){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe um valor válido!";
+      return $arrRet;
+    }
+
+    $vCategoria = isset($arrLancamentoDados["lan_categoria"]) ? $arrLancamentoDados["lan_categoria"]: "";
+    if(!is_numeric($vCategoria)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe a categoria do lançamento!";
+      return $arrRet;
+    }
+
+    $vPagamento = (isset($arrLancamentoDados["lan_pagamento"])) ? $arrLancamentoDados["lan_pagamento"]: "";
+    if($vPagamento != ""){
+      $isVctoValid = isValidDate($vPagamento, "Y-m-d");
+      if(!$isVctoValid){
+        $arrRet["erro"] = true;
+        $arrRet["msg"]  = "Por favor, informe uma data de pagamento válida!";
+        return $arrRet;
+      }
+    }
+
+    $vValorPg = (isset($arrLancamentoDados["lan_valor_pago"])) ? (float)$arrLancamentoDados["lan_valor_pago"]: "";
+    if($vValorPg != ""){
+      if(!is_numeric($vValorPg) || $vValorPg < 0){
+        $arrRet["erro"] = true;
+        $arrRet["msg"]  = "Por favor, informe um valor pago válido!";
+        return $arrRet;
+      }
+    }
+
+    $vConta = isset($arrLancamentoDados["lan_conta"]) ? $arrLancamentoDados["lan_conta"]: "";
+    if($vConta != ""){
+      if(!is_numeric($vConta)){
+        $arrRet["erro"] = true;
+        $arrRet["msg"]  = "Por favor, informe a conta do lançamento!";
+        return $arrRet;
+      }
+    }
+
+    $arrRet["erro"] = false;
+    $arrRet["msg"]  = "";
+    return $arrRet;
+  }
+
+  public function insert($arrLancamentoDados){
+    $arrRet         = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "";
+
+    $retValidacao = $this->validaInsert($arrLancamentoDados);
+    if($retValidacao["erro"]){
+      return $retValidacao;
+    }
+
+    $this->load->database();
+
+    $vDespesa    = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: null;
+    $vTipo       = isset($arrLancamentoDados["lan_tipo"]) ? $arrLancamentoDados["lan_tipo"]: null;
+    $vIdParcela  = isset($arrLancamentoDados["lan_id_parcela"]) && is_numeric($arrLancamentoDados["lan_id_parcela"]) ? $arrLancamentoDados["lan_id_parcela"]: null;
+    $vParcelaNr  = isset($arrLancamentoDados["lan_parcela_nr"]) && is_numeric($arrLancamentoDados["lan_parcela_nr"]) ? $arrLancamentoDados["lan_parcela_nr"]: null;
+    $vVencimento = isset($arrLancamentoDados["lan_vencimento"]) && strlen($arrLancamentoDados["lan_vencimento"]) == 10 ? $arrLancamentoDados["lan_vencimento"]: null;
+    $vValor      = isset($arrLancamentoDados["lan_valor"]) && $arrLancamentoDados["lan_valor"] > 0 ? $arrLancamentoDados["lan_valor"]: null;
+    $vCategoria  = isset($arrLancamentoDados["lan_categoria"]) && $arrLancamentoDados["lan_categoria"] > 0 ? $arrLancamentoDados["lan_categoria"]: null;
+    $vPagamento  = isset($arrLancamentoDados["lan_pagamento"]) && strlen($arrLancamentoDados["lan_pagamento"]) == 10 ? $arrLancamentoDados["lan_pagamento"]: null;
+    $vValorPago  = isset($arrLancamentoDados["lan_valor_pago"]) && $arrLancamentoDados["lan_valor_pago"] >= 0 ? $arrLancamentoDados["lan_valor_pago"]: null;
+    $vConta      = isset($arrLancamentoDados["lan_conta"]) && $arrLancamentoDados["lan_conta"] > 0 ? $arrLancamentoDados["lan_conta"]: null;
+    $vObservacao = isset($arrLancamentoDados["lan_observacao"]) ? $arrLancamentoDados["lan_observacao"]: null;
+
+    $data = array(
+      'lan_despesa'    => $vDespesa,
+      'lan_tipo'       => $vTipo,
+      'lan_id_parcela' => $vIdParcela,
+      'lan_parcela_nr' => $vParcelaNr,
+      'lan_vencimento' => $vVencimento,
+      'lan_valor'      => $vValor,
+      'lan_categoria'  => $vCategoria,
+      'lan_pagamento'  => $vPagamento,
+      'lan_valor_pago' => $vValorPago,
+      'lan_conta'      => $vConta,
+      'lan_observacao' => $vObservacao,
+    );
+
+    $retInsert = $this->db->insert('tb_lancamento', $data);
+    if(!$retInsert){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = $this->db->_error_message();
+    } else {
+      $arrRet["erro"] = false;
+      $arrRet["msg"]  = "Lançamento inserido com sucesso!";
+    }
+
+    return $arrRet;
+  }
+
+  private function validaEdit($arrLancamentoDados){
+    $this->load->helper('utils');
+
+    $arrRet         = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "";
+
+    $vLanId = (isset($arrLancamentoDados["lan_id"])) ? $arrLancamentoDados["lan_id"]: "";
+    if(!$vLanId > 0){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "ID inválido para editar o Lançamento!";
+      return $arrRet;
+    }
+
+    $vDespesa = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: "";
+    if( strlen($vDespesa) < 3 ){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe a descrição do lançamento!";
+      return $arrRet;
+    }
+
+    $vTipo = isset($arrLancamentoDados["lan_tipo"]) ? $arrLancamentoDados["lan_tipo"]: "";
+    $arrTiposValidos = array("R", "D", "T");
+    if(!in_array($vTipo, $arrTiposValidos)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe o tipo do lançamento!";
+      return $arrRet;
+    }
+
+    $vVencimento = (isset($arrLancamentoDados["lan_vencimento"])) ? $arrLancamentoDados["lan_vencimento"]: "";
+    $isVctoValid = isValidDate($vVencimento, "Y-m-d");
+    if(!$isVctoValid){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe uma data de vencimento válida!";
+      return $arrRet;
+    }
+
+    $vValor = (isset($arrLancamentoDados["lan_valor"])) ? (float)$arrLancamentoDados["lan_valor"]: "";
+    if(!is_numeric($vValor) || !$vValor > 0){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe um valor válido!";
+      return $arrRet;
+    }
+
+    $vCategoria = isset($arrLancamentoDados["lan_categoria"]) ? $arrLancamentoDados["lan_categoria"]: "";
+    if(!is_numeric($vCategoria)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe a categoria do lançamento!";
+      return $arrRet;
+    }
+
+    $vPagamento = (isset($arrLancamentoDados["lan_pagamento"])) ? $arrLancamentoDados["lan_pagamento"]: "";
+    if($vPagamento != ""){
+      $isVctoValid = isValidDate($vPagamento, "Y-m-d");
+      if(!$isVctoValid){
+        $arrRet["erro"] = true;
+        $arrRet["msg"]  = "Por favor, informe uma data de pagamento válida!";
+        return $arrRet;
+      }
+    }
+
+    $vValorPg = (isset($arrLancamentoDados["lan_valor_pago"])) ? (float)$arrLancamentoDados["lan_valor_pago"]: "";
+    if($vValorPg != ""){
+      if(!is_numeric($vValorPg) || $vValorPg < 0){
+        $arrRet["erro"] = true;
+        $arrRet["msg"]  = "Por favor, informe um valor pago válido!";
+        return $arrRet;
+      }
+    }
+
+    $vConta = isset($arrLancamentoDados["lan_conta"]) ? $arrLancamentoDados["lan_conta"]: "";
+    if($vConta != ""){
+      if(!is_numeric($vConta)){
+        $arrRet["erro"] = true;
+        $arrRet["msg"]  = "Por favor, informe a conta do lançamento!";
+        return $arrRet;
+      }
+    }
+
+    $arrRet["erro"] = false;
+    $arrRet["msg"]  = "";
+    return $arrRet;
+  }
+
+  public function edit($arrLancamentoDados){
+    $arrRet         = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "";
+
+    $retValidacao = $this->validaEdit($arrLancamentoDados);
+    if($retValidacao["erro"]){
+      return $retValidacao;
+    }
+
+    $this->load->database();
+
+    $vLanId      = (isset($arrLancamentoDados["lan_id"])) ? $arrLancamentoDados["lan_id"]: "";
+    $vDespesa    = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: null;
+    $vTipo       = isset($arrLancamentoDados["lan_tipo"]) ? $arrLancamentoDados["lan_tipo"]: null;
+    $vIdParcela  = isset($arrLancamentoDados["lan_id_parcela"]) && is_numeric($arrLancamentoDados["lan_id_parcela"]) ? $arrLancamentoDados["lan_id_parcela"]: null;
+    $vParcelaNr  = isset($arrLancamentoDados["lan_parcela_nr"]) && is_numeric($arrLancamentoDados["lan_parcela_nr"]) ? $arrLancamentoDados["lan_parcela_nr"]: null;
+    $vVencimento = isset($arrLancamentoDados["lan_vencimento"]) && strlen($arrLancamentoDados["lan_vencimento"]) == 10 ? $arrLancamentoDados["lan_vencimento"]: null;
+    $vValor      = isset($arrLancamentoDados["lan_valor"]) && $arrLancamentoDados["lan_valor"] > 0 ? $arrLancamentoDados["lan_valor"]: null;
+    $vCategoria  = isset($arrLancamentoDados["lan_categoria"]) && $arrLancamentoDados["lan_categoria"] > 0 ? $arrLancamentoDados["lan_categoria"]: null;
+    $vPagamento  = isset($arrLancamentoDados["lan_pagamento"]) && strlen($arrLancamentoDados["lan_pagamento"]) == 10 ? $arrLancamentoDados["lan_pagamento"]: null;
+    $vValorPago  = isset($arrLancamentoDados["lan_valor_pago"]) && $arrLancamentoDados["lan_valor_pago"] >= 0 ? $arrLancamentoDados["lan_valor_pago"]: null;
+    $vConta      = isset($arrLancamentoDados["lan_conta"]) && $arrLancamentoDados["lan_conta"] > 0 ? $arrLancamentoDados["lan_conta"]: null;
+    $vObservacao = isset($arrLancamentoDados["lan_observacao"]) ? $arrLancamentoDados["lan_observacao"]: null;
+
+    $Lancamento = [];
+    $Lancamento["lan_id"]         = $vLanId;
+    $Lancamento["lan_despesa"]    = $vDespesa;
+    $Lancamento["lan_tipo"]       = $vTipo;
+    $Lancamento["lan_id_parcela"] = $vIdParcela;
+    $Lancamento["lan_parcela_nr"] = $vParcelaNr;
+    $Lancamento["lan_vencimento"] = $vVencimento;
+    $Lancamento["lan_valor"]      = $vValor;
+    $Lancamento["lan_categoria"]  = $vCategoria;
+    $Lancamento["lan_pagamento"]  = $vPagamento;
+    $Lancamento["lan_valor_pago"] = $vValorPago;
+    $Lancamento["lan_conta"]      = $vConta;
+    $Lancamento["lan_observacao"] = $vObservacao;
+
+    $this->db->where('lan_id', $vLanId);
+    $retInsert = $this->db->update('tb_lancamento', $Lancamento);
+    if(!$retInsert){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = $this->db->_error_message();
+    } else {
+      $arrRet["erro"] = false;
+      $arrRet["msg"]  = "Lancamento editado com sucesso!";
+    }
+
+    return $arrRet;
+  }
+
+  public function delete($lanId){
+    $arrRet           = [];
+    $arrRet["erro"]   = true;
+    $arrRet["msg"]    = "";
+
+    if(!is_numeric($lanId)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "ID inválido para deletar!";
+
+      return $arrRet;
+    } else {
+      $this->load->database();
+      $this->db->where('lan_id', $lanId);
+      $retDelete = $this->db->delete('tb_lancamento');
+
+      if(!$retDelete){
+        $arrRet["erro"] = true;
+        $arrRet["msg"]  = $this->db->_error_message();
+      } else {
+        $arrRet["erro"] = false;
+        $arrRet["msg"] = "Lançamento deletado com sucesso!";
+      }
+
+      return $arrRet;
+    }
+  }
+}
