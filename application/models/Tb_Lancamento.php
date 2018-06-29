@@ -2,6 +2,9 @@
 class Tb_Lancamento extends CI_Model {
   public function getHtmlLancamentos($arrFilters=array(), $edit=true){
     // filtros
+    $vMesBase   = isset($arrFilters["mesBase"]) ? $arrFilters["mesBase"]: (int) date("m");
+    $vAnoBase   = isset($arrFilters["anoBase"]) ? $arrFilters["anoBase"]: (int) date("Y");
+
     $vVctoIni   = isset($arrFilters["vctoIni"]) ? $arrFilters["vctoIni"]: "";
     $vVctoFim   = isset($arrFilters["vctoFim"]) ? $arrFilters["vctoFim"]: "";
     $vPgtoIni   = isset($arrFilters["pgtoIni"]) ? $arrFilters["pgtoIni"]: "";
@@ -14,6 +17,14 @@ class Tb_Lancamento extends CI_Model {
 
     // sql filter
     $sqlFilter = "";
+
+    if($vMesBase != ""){
+      $sqlFilter .= " AND EXTRACT(MONTH FROM lan_vencimento) = $vMesBase ";
+    }
+
+    if($vAnoBase != ""){
+      $sqlFilter .= " AND EXTRACT(YEAR FROM lan_vencimento) = $vAnoBase ";
+    }
 
     if($vVctoIni != ""){
       $sqlFilter .= " AND lan_vencimento >= '$vVctoIni' ";
@@ -135,6 +146,146 @@ class Tb_Lancamento extends CI_Model {
     $htmlTable .= "</table>";
 
     return $htmlTable;
+  }
+
+  private function getHtmlTbTotais($arrGastos){
+    $html  = "";
+    $html .= "<table class='table tableBordered' id=''>";
+    $html .= "  <thead>";
+    $html .= "    <tr style='font-weight: bold;'>";
+    $html .= "      <td>Categoria</td>";
+    $html .= "      <td>Previsto</td>";
+    $html .= "      <td>Real</td>";
+    $html .= "    </tr>";
+    $html .= "  </thead>";
+    $html .= "  <tbody>";
+
+    $totPrevisto  = 0;
+    $totRealizado = 0;
+
+    foreach($arrGastos as $rs1){
+      $previsto  = ($rs1["vlrPrevisto"] != "") ? $rs1["vlrPrevisto"]: 0;
+      $realizado = ($rs1["vlrRealizado"] != "") ? $rs1["vlrRealizado"]: 0;
+      $cssRed    = ($realizado > $previsto) ? "color:red;": "";
+      $totPrevisto  += $previsto;
+      $totRealizado += $realizado;
+
+      $categoria    = $rs1["categoria"];
+      $vlrPrevisto  = "R$".number_format($previsto, 2, ",", ".");
+      $vlrRealizado = "R$".number_format($realizado, 2, ",", ".");
+
+      $html .= "  <tr style='$cssRed'>";
+      $html .= "    <td>$categoria</td>";
+      $html .= "    <td>$vlrPrevisto</td>";
+      $html .= "    <td>$vlrRealizado</td>";
+      $html .= "  </tr>";
+    }
+
+    $html .= "    <tr>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL PREVISTO: R$".number_format($totPrevisto, 2, ",", ".")."</center></td>";
+    $html .= "    </tr>";
+    $html .= "    <tr>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL REALIZADO: R$".number_format($totRealizado, 2, ",", ".")."</center></td>";
+    $html .= "    </tr>";
+    $html .= "    <tr>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>DIFERENÇA: R$".number_format($totPrevisto - $totRealizado, 2, ",", ".")."</center></td>";
+    $html .= "    </tr>";
+    $html .= "  </tbody>";
+    $html .= "</table>";
+
+    return $html;
+  }
+
+  public function getArrCategoriaGastos($vMesBase, $vAnoBase){
+    $this->load->database();
+
+    $arrFixos        = [];
+    $arrVariaveis    = [];
+    $arrInvestimento = [];
+    $idsNotIn        = "30";
+
+    $vSql  = " SELECT bdp_id AS id_categoria ";
+    $vSql .= "        , bdp_descricao AS categoria ";
+    $vSql .= "        , bdp_tipo AS tipo ";
+    $vSql .= "        , ROUND(COALESCE(mdp_valor, 0), 2) AS previsto ";
+    $vSql .= "        , ROUND(SUM(COALESCE(lan_valor_pago, lan_valor)), 2) AS realizado ";
+    $vSql .= " FROM tb_base_despesa ";
+    $vSql .= " LEFT JOIN tb_lancamento ON (lan_categoria = bdp_id AND lan_tipo = 'D' AND EXTRACT(MONTH FROM lan_vencimento) = $vMesBase AND EXTRACT(YEAR FROM lan_vencimento) = $vAnoBase) ";
+    $vSql .= " LEFT JOIN tb_meta_despesa ON (mdp_despesa = bdp_id AND mdp_mes = $vMesBase AND mdp_ano = $vAnoBase) ";
+    $vSql .= " WHERE bdp_ativo = 1 ";
+    $vSql .= " AND bdp_contabiliza = 1 ";
+    $vSql .= " AND bdp_id NOT IN ($idsNotIn) ";
+    $vSql .= " GROUP BY bdp_id ";
+    $vSql .= " ORDER BY bdp_descricao ";
+
+    $query = $this->db->query($vSql);
+    $arrRs = $query->result_array();
+
+    foreach($arrRs as $rs1){
+      $idCategoria  = $rs1["id_categoria"];
+      $categoria    = $rs1["categoria"];
+      $tipo         = $rs1["tipo"];
+      $vlrPrevisto  = $rs1["previsto"];
+      $vlrRealizado = $rs1["realizado"];
+
+      switch ($tipo) {
+        case 'V':
+          $nameArray = "arrVariaveis";
+          break;
+        case 'F':
+          $nameArray = "arrFixos";
+          break;
+        case 'I':
+          $nameArray = "arrInvestimento";
+          break;
+        default:
+          $nameArray = "";
+          break;
+      }
+
+      if($nameArray != ""){
+        $$nameArray[] = array(
+          "idCategoria"  => $idCategoria,
+          "categoria"    => $categoria,
+          "tipo"         => $tipo,
+          "vlrPrevisto"  => $vlrPrevisto,
+          "vlrRealizado" => $vlrRealizado,
+        );
+      }
+    }
+
+    return array(
+      "arrVariaveis"    => $arrVariaveis,
+      "arrFixos"        => $arrFixos,
+      "arrInvestimento" => $arrInvestimento,
+    );
+  }
+
+  public function getHtmlTotaisGastos($arrFilters=array()){
+    // filtros
+    $vMesBase   = isset($arrFilters["mesBase"]) ? $arrFilters["mesBase"]: (int) date("m");
+    $vAnoBase   = isset($arrFilters["anoBase"]) ? $arrFilters["anoBase"]: (int) date("Y");
+    // =======
+
+    $arrRetGastos = $this->getArrCategoriaGastos($vMesBase, $vAnoBase);
+
+    $html  = "<button id='btnGerenciarPrevisao' data-mes='$vMesBase' data-ano='$vAnoBase' style='margin:15px 0;' class='btn btn-info btn-mini'>Gerenciar Previsão</button>";
+    $html .= "<div class='row-fluid'>";
+    $html .= "  <div class='span4'>";
+    $html .= "    <h4>Gastos Fixos</h4>";
+    $html .= "    " . $this->getHtmlTbTotais($arrRetGastos["arrFixos"]);
+    $html .= "  </div>";
+    $html .= "  <div class='span4'>";
+    $html .= "    <h4>Gastos Variáveis</h4>";
+    $html .= "    " . $this->getHtmlTbTotais($arrRetGastos["arrVariaveis"]);
+    $html .= "  </div>";
+    $html .= "  <div class='span4'>";
+    $html .= "    <h4>Investimentos</h4>";
+    $html .= "    " . $this->getHtmlTbTotais($arrRetGastos["arrInvestimento"]);
+    $html .= "  </div>";
+    $html .= "</div>";
+
+    return $html;
   }
 
   public function getLancamento($lanId){

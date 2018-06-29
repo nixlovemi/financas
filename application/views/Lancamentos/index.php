@@ -1,7 +1,11 @@
 <?php
-$htmlLancamentos = isset($htmlLancamentos) ? $htmlLancamentos: "";
-$arrContas       = isset($arrContas) ? $arrContas: array();
-$arrBaseDesp     = isset($arrBaseDesp) ? $arrBaseDesp: array();
+$htmlLancamentos  = isset($htmlLancamentos) ? $htmlLancamentos: "";
+$htmlTotaisGastos = isset($htmlTotaisGastos) ? $htmlTotaisGastos: "";
+$arrContas        = isset($arrContas) ? $arrContas: array();
+$arrBaseDesp      = isset($arrBaseDesp) ? $arrBaseDesp: array();
+
+$mesAtual = (int) date("m");
+$anoAtual = (int) date("Y");
 ?>
 
 <h1>Lançamentos</h1>
@@ -27,6 +31,43 @@ if(isset($errorMsg) && $errorMsg != ""){
   <div class="accordion-body collapse" id="collapseGOne" style="height: 0px;">
     <div class="widget-content nopadding">
       <form id="frmFiltrosLancamentos" class="form-horizontal">
+        <div class="control-group">
+          <label class="control-label">Mês Base</label>
+          <div class="controls">
+            <select id="mes_base" name="mes_base">
+              <?php
+              $arrMes     = [];
+              $arrMes[1]  = "Janeiro";
+              $arrMes[2]  = "Fevereiro";
+              $arrMes[3]  = "Março";
+              $arrMes[4]  = "Abril";
+              $arrMes[5]  = "Maio";
+              $arrMes[6]  = "Junho";
+              $arrMes[7]  = "Julho";
+              $arrMes[8]  = "Agosto";
+              $arrMes[9]  = "Setembro";
+              $arrMes[10] = "Outubro";
+              $arrMes[11] = "Novembro";
+              $arrMes[12] = "Dezembro";
+
+              foreach($arrMes as $nrMes => $strMes){
+                $selected = ($mesAtual == $nrMes) ? " selected ": "";
+                echo "<option $selected value='$nrMes'>$strMes</option>";
+              }
+              ?>
+            </select>
+            &nbsp;&nbsp;
+            <select id="ano_base" name="ano_base">
+              <?php
+              $anoLimite = date("Y") + 2;
+              for($i=2018;$i<=$anoLimite;$i++){
+                $selected = ($anoAtual == $i) ? " selected ": "";
+                echo "<option $selected value='$i'>$i</option>";
+              }
+              ?>
+            </select>
+          </div>
+        </div>
         <div class="control-group">
           <label class="control-label">Vencimento</label>
           <div class="controls">
@@ -113,6 +154,17 @@ if(isset($errorMsg) && $errorMsg != ""){
   <div class="widget-content nopadding" id="dvHtmlLancamentos">
     <?php
     echo $htmlLancamentos;
+    ?>
+  </div>
+</div>
+
+<div class="widget-box">
+  <div class="widget-title"> <span class="icon"><i class="icon icon-money"></i></span>
+    <h5>Totais Gastos</h5>
+  </div>
+  <div class="widget-content" id="dvHtmlTotaisGastos">
+    <?php
+    echo $htmlTotaisGastos;
     ?>
   </div>
 </div>

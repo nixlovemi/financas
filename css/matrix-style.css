@@ -1623,7 +1623,8 @@ th a {
 }
 .dynatable-record-count{
 	position: relative;
-	left: 5px;
+	left: -8px;
+	top: -35px;
 }
 .datepicker-days .day:hover{
 	cursor: pointer;
@@ -1635,4 +1636,16 @@ th a {
 .datepicker-days table thead tr:last-child{
 	background-color: #5bb75b;
 	color: #FFF;
+}
+ul.dynatable-pagination-links{
+	float: none;
+}
+span.dynatable-record-count{
+	float: right;
+}
+.tableBordered{
+	border: 1px solid #ddd;
+}
+.tableBordered td{
+	border-right: 1px solid #ddd;
 }

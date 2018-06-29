@@ -119,6 +119,63 @@ $(document).on('change', '#frmRelatorios #cbRelatorios', function(){
 // ===============
 
 // Lancamentos
+function calcTotaisGerenciarPrevisao(){
+  // FIXOS =========
+  var vTotFixos       = 0;
+  var vTotFixosRealiz = moedaParaNumero( $('span#totaisRealizFixos').html() );
+  $( "input.Fixos" ).each(function( index ) {
+    var vlr_prev = moedaParaNumero( $(this).val() );
+    if($.isNumeric(vlr_prev)){
+      vTotFixos += vlr_prev;
+    }
+  });
+
+  $('div#total_Fixos h4').html("<span>TOTAL:</span> " + numeroParaMoeda(vTotFixos, 2, ",", "."));
+  $('span#totaisPrevFixos').html(numeroParaMoeda(vTotFixos, 2, ",", "."));
+  $('span#totaisDifFixos').html(numeroParaMoeda(vTotFixos - vTotFixosRealiz, 2, ",", "."));
+  // ===============
+
+  // VARIAVEIS =====
+  var vTotVariaveis       = 0;
+  var vTotVariaveisRealiz = moedaParaNumero( $('span#totaisRealizVariáveis').html() );
+  $( "input.Variáveis" ).each(function( index ) {
+    var vlr_prev = moedaParaNumero( $(this).val() );
+    if($.isNumeric(vlr_prev)){
+      vTotVariaveis += vlr_prev;
+    }
+  });
+
+  $('div#total_Variáveis h4').html("<span>TOTAL:</span> " + numeroParaMoeda(vTotVariaveis, 2, ",", "."));
+  $('span#totaisPrevVariáveis').html(numeroParaMoeda(vTotVariaveis, 2, ",", "."));
+  $('span#totaisDifVariáveis').html(numeroParaMoeda(vTotVariaveis - vTotVariaveisRealiz, 2, ",", "."));
+  // ===============
+
+  // INVESTIMENTO =====
+  var vTotInvestimento       = 0;
+  var vTotInvestimentoRealiz = moedaParaNumero( $('span#totaisRealizInvestimento').html() );
+  $( "input.Investimento" ).each(function( index ) {
+    var vlr_prev = moedaParaNumero( $(this).val() );
+    if($.isNumeric(vlr_prev)){
+      vTotInvestimento += vlr_prev;
+    }
+  });
+
+  $('div#total_Investimento h4').html("<span>TOTAL:</span> " + numeroParaMoeda(vTotInvestimento, 2, ",", "."));
+  $('span#totaisPrevInvestimento').html(numeroParaMoeda(vTotInvestimento, 2, ",", "."));
+  $('span#totaisDifInvestimento').html(numeroParaMoeda(vTotInvestimento - vTotInvestimentoRealiz, 2, ",", "."));
+  // ===============
+
+  // TOTAIS GERAIS
+  $('span#totGeralPrev').html(numeroParaMoeda(vTotFixos + vTotVariaveis + vTotInvestimento, 2, ",", "."));
+  $('span#totGeralRealiz').html(numeroParaMoeda(vTotFixosRealiz + vTotVariaveisRealiz + vTotInvestimentoRealiz, 2, ",", "."));
+  $('span#totGeralDif').html(numeroParaMoeda((vTotFixos + vTotVariaveis + vTotInvestimento) - (vTotFixosRealiz + vTotVariaveisRealiz + vTotInvestimentoRealiz), 2, ",", "."));
+  // =============
+}
+
+$(document).on('blur', "input.Fixos, input.Variáveis, input.Investimento", function () {
+  calcTotaisGerenciarPrevisao()
+});
+
 $(document).on('click', '#dvHtmlLancamentos .TbLancamento_ajax_alterar', function(){
 	var lanId = $(this).data("id");
 
@@ -227,12 +284,13 @@ $(document).on('click', '#frmFiltrosLancamentos #btnFiltrarLancamentos', functio
 		dataType: 'json',
     beforeSend: function(){
       var htmlLoader = getHtmlLoader();
-      $("#dvHtmlLancamentos").html(htmlLoader);
+      $("#dvHtmlLancamentos, #dvHtmlTotaisGastos").html(htmlLoader);
     },
 		success: function (ret) {
-			var erro            = ret.erro;
-			var msg             = ret.msg;
-			var htmlLancamentos = ret.htmlLancamentos;
+			var erro             = ret.erro;
+			var msg              = ret.msg;
+			var htmlLancamentos  = ret.htmlLancamentos;
+      var htmlTotaisGastos = ret.htmlTotaisGastos;
 
 			if(erro){
 				$.gritter.add({
@@ -241,8 +299,42 @@ $(document).on('click', '#frmFiltrosLancamentos #btnFiltrarLancamentos', functio
 				});
 			} else {
         $("#dvHtmlLancamentos").html(htmlLancamentos);
+        $("#dvHtmlTotaisGastos").html(htmlTotaisGastos);
         setTimeout("loadObjects();", 500);
 			}
+    }
+  });
+});
+
+$(document).on('click', '#btnGerenciarPrevisao', function(){
+  var mes = $(this).data("mes");
+  var ano = $(this).data("ano");
+
+  $.ajax({
+    type: "POST",
+    url: HOME_URL + 'Lancamentos/jsonHtmlCadPrevisao',
+    data: 'mes_base=' + mes + '&ano_base=' + ano,
+    dataType: 'json',
+    success: function (ret) {
+      var html = ret.htmlCadPrevisao;
+      confirmBootbox(html, function(){
+        var variaveis = $("#frmJsonCadPrevisao").serialize();
+        var retJson   = mvc_post_json_ajax_var('Lancamentos', 'jsonPostCadPrevisao', variaveis);
+
+        if(retJson.erro){
+          $.gritter.add({
+  					title: 'Alerta',
+  					text: retJson.msg,
+  				});
+          var maxZindex = getHighIndex();
+          $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
+
+          return false;
+        } else {
+          $("#btnFiltrarLancamentos").click();
+        }
+      });
+      setTimeout("loadObjects(); calcTotaisGerenciarPrevisao();", 750);
     }
   });
 });

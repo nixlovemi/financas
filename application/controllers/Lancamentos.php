@@ -13,6 +13,9 @@ class Lancamentos extends MY_Controller {
     $htmlLancamentos         = $this->Tb_Lancamento->getHtmlLancamentos();
     $data["htmlLancamentos"] = $htmlLancamentos;
 
+    $htmlTotaisGastos         = $this->Tb_Lancamento->getHtmlTotaisGastos();
+    $data["htmlTotaisGastos"] = $htmlTotaisGastos;
+
     $this->load->model('Tb_Conta');
     $retContas = $this->Tb_Conta->getContas();
     $arrContas = ($retContas["erro"] == false) ? $retContas["arrContas"]: array();
@@ -103,6 +106,9 @@ class Lancamentos extends MY_Controller {
     $arrRet["htmlLancamentos"] = "";
 
     // variaveis ============
+    $vMesBase    = $this->input->post('mes_base');
+    $vAnoBase    = $this->input->post('ano_base');
+
     $vVctoIni    = $this->input->post('filterDtVctoIni');
     $vVctoFim    = $this->input->post('filterDtVctoFim');
     $vPgtoIni    = $this->input->post('filterDtPgtoIni');
@@ -115,6 +121,14 @@ class Lancamentos extends MY_Controller {
 
     // filtro
     $arrFilters = [];
+
+    if($vMesBase != ""){
+      $arrFilters["mesBase"] = $vMesBase;
+    }
+
+    if($vAnoBase != ""){
+      $arrFilters["anoBase"] = $vAnoBase;
+    }
 
     if($vVctoIni != ""){
       $arrFilters["vctoIni"] = acerta_data($vVctoIni);
@@ -152,6 +166,9 @@ class Lancamentos extends MY_Controller {
     $this->load->model('Tb_Lancamento');
     $htmlContasRecebTable = $this->Tb_Lancamento->getHtmlLancamentos($arrFilters);
     $arrRet["htmlLancamentos"] = $htmlContasRecebTable;
+
+    $htmlTotaisGastos           = $this->Tb_Lancamento->getHtmlTotaisGastos($arrFilters);
+    $arrRet["htmlTotaisGastos"] = $htmlTotaisGastos;
 
     echo json_encode($arrRet);
   }
@@ -272,5 +289,64 @@ class Lancamentos extends MY_Controller {
       echo json_encode($arrRet);
       return;
     }
+  }
+
+  public function jsonHtmlCadPrevisao(){
+    $data   = [];
+    $arrRet = [];
+    $arrRet["erro"]            = false;
+    $arrRet["msg"]             = "";
+    $arrRet["htmlCadPrevisao"] = "";
+
+    // variaveis ============
+    $vMesBase = $this->input->post('mes_base');
+    $vAnoBase = $this->input->post('ano_base');
+    // ======================
+
+    $this->load->model("Tb_Lancamento");
+    $arrRetGastos         = $this->Tb_Lancamento->getArrCategoriaGastos($vMesBase, $vAnoBase);
+    $data["arrRetGastos"] = $arrRetGastos;
+    $data["mes_base"]     = $vMesBase;
+    $data["ano_base"]     = $vAnoBase;
+
+    $htmlView = $this->load->view('Lancamentos/cadPrevisao', $data, true);
+    $arrRet["htmlCadPrevisao"] = $htmlView;
+    echo json_encode($arrRet);
+  }
+
+  public function jsonPostCadPrevisao(){
+    $this->load->helpers("utils");
+
+    $arrRet = [];
+    $arrRet["erro"] = false;
+    $arrRet["msg"]  = "";
+
+    // parametros
+    $mesBase = ($this->input->post('mes_base') != "") ? $this->input->post('mes_base'): null;
+    $anoBase = ($this->input->post('ano_base') != "") ? $this->input->post('ano_base'): null;
+
+    $arrInfoPrev = [];
+    foreach($_POST as $key => $value){
+      $ehPrevisao = strpos($key, "lanValor_") !== false;
+      if($ehPrevisao){
+        $arrKey  = explode("lanValor_", $key);
+        $bdpId   = isset($arrKey[1]) ? $arrKey[1]: 0;
+        $metaVlr = acerta_moeda($value);
+
+        if($bdpId > 0){
+          $metaVlr = (is_numeric($metaVlr)) ? $metaVlr: 0;
+          $arrInfoPrev[$bdpId] = $metaVlr;
+        }
+      }
+    }
+    // ==========
+
+    $this->load->model("Tb_Meta_Despesa");
+    $retInsert = $this->Tb_Meta_Despesa->insertArray($mesBase, $anoBase, $arrInfoPrev);
+
+    $arrRet["erro"] = $retInsert["erro"];
+    $arrRet["msg"]  = $retInsert["msg"];
+
+    echo json_encode($arrRet);
   }
 }

@@ -120,7 +120,7 @@
       page: 'page',
       perPage: 'perPage',
       offset: 'offset',
-      records: 'records',
+      records: 'linhas',
       record: null,
       queryRecordCount: 'queryRecordCount',
       totalRecordCount: 'totalRecordCount'
@@ -713,13 +713,13 @@
 
       if (recordsShown < recordsQueryCount && settings.features.paginate) {
         var bounds = obj.records.pageBounds();
-        text += "<span class='dynatable-record-bounds'>" + (bounds[0] + 1) + " to " + bounds[1] + "</span> of ";
+        text += "<span class='dynatable-record-bounds'>" + (bounds[0] + 1) + " to " + bounds[1] + "</span> de ";
       } else if (recordsShown === recordsQueryCount && settings.features.paginate) {
-        text += recordsShown + " of ";
+        text += recordsShown + " de ";
       }
       text += recordsQueryCount + " " + collection_name;
       if (recordsQueryCount < recordsTotal) {
-        text += " (filtered from " + recordsTotal + " total records)";
+        text += " (filtrado de " + recordsTotal + " linha(s))";
       }
 
       return $('<span></span>', {
@@ -1209,7 +1209,7 @@
           $searchSpan = $('<span></span>', {
             id: 'dynatable-search-' + obj.element.id,
             'class': 'dynatable-search',
-            text: 'Search: '
+            text: 'Pesquisar: '
           }).append($search);
 
       $search
@@ -1339,7 +1339,7 @@
             (pages + 1) - settings.inputs.paginationGap[3]
           ];
 
-      pageLinks += '<li><span>Pages: </span></li>';
+      pageLinks += '<li><span>Páginas: </span></li>';
 
       for (var i = 1; i <= pages; i++) {
         if ( (i > breaks[0] && i < breaks[1]) || (i > breaks[2] && i < breaks[3])) {
@@ -1395,7 +1395,7 @@
     };
 
     this.buildLink = function(page, label, linkClass, conditional, conditionalClass) {
-      var link = '<a  href="#" data-dynatable-page=' + page + ' class="' + linkClass,
+      var link = '<a href="javascript:;" data-dynatable-page=' + page + ' class="' + linkClass,
           li = '<li';
 
       if (conditional) {
