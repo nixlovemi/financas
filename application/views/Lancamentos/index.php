@@ -11,7 +11,7 @@ $anoAtual = (int) date("Y");
 <h1>Lançamentos</h1>
 
 <a class="btn btn-info btn-large" href="javascript:;" id="btnJsonAddLancamento">NOVO LANÇAMENTO</a>
-<a class="btn btn-info btn-large" href="javascript:;" id="">NOVA TRANSFERÊNCIA</a>
+<a class="btn btn-info btn-large" href="javascript:;" id="btnJsonAddTransferencia">NOVA TRANSFERÊNCIA</a>
 
 <?php
 if(isset($errorMsg) && $errorMsg != ""){

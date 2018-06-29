@@ -349,4 +349,51 @@ class Lancamentos extends MY_Controller {
 
     echo json_encode($arrRet);
   }
+
+  public function jsonHtmlAddTransferencia(){
+    $data = [];
+
+    $this->load->model('Tb_Conta');
+    $retConta = $this->Tb_Conta->getContas();
+    $arrConta = (!$retConta["erro"]) ? $retConta["arrContas"]: array();
+    $data["arrConta"] = $arrConta;
+
+    $htmlView = $this->load->view('Lancamentos/novaTransferencia', $data, true);
+
+    $arrRet = [];
+    $arrRet["html"] = $htmlView;
+    echo json_encode($arrRet);
+  }
+
+  public function jsonAddTransferencia(){
+    $this->load->helper('utils');
+
+    $arrRet = [];
+    $arrRet["erro"] = false;
+    $arrRet["msg"]  = "";
+
+    // variaveis ============
+    $tVencimento = (strlen($this->input->post('tVencimento')) == 10) ? acerta_data($this->input->post('tVencimento')): null;
+    $tValor      = ($this->input->post('tValor') != "") ? acerta_moeda($this->input->post('tValor')): null;
+    $tContaDe    = ($this->input->post('tContaDe') != "") ? $this->input->post('tContaDe'): null;
+    $tContaPara  = ($this->input->post('tContaPara') != "") ? $this->input->post('tContaPara'): null;
+    // ======================
+
+    $this->load->model('Tb_Lancamento');
+    $retInsert = $this->Tb_Lancamento->insertTransferencia($tValor, $tVencimento, $tContaDe, $tContaPara);
+
+    if( $retInsert["erro"] ){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Erro ao inserir Transferência. Msg: " . $retInsert["msg"];
+
+      echo json_encode($arrRet);
+      return;
+    } else {
+      $arrRet["erro"] = false;
+      $arrRet["msg"]  = "Transferência inserida com sucesso.";
+
+      echo json_encode($arrRet);
+      return;
+    }
+  }
 }

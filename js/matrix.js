@@ -274,6 +274,36 @@ $(document).on('click', '#btnJsonAddLancamento', function(){
   });
 });
 
+$(document).on('click', '#btnJsonAddTransferencia', function(){
+  $.ajax({
+    type: "POST",
+    url: HOME_URL + 'Lancamentos/jsonHtmlAddTransferencia',
+    data: '',
+    dataType: 'json',
+    success: function (ret) {
+      var html = ret.html;
+      confirmBootbox(html, function(){
+        var variaveis = $("#frmJsonAddTransferencia").serialize();
+        var retJson   = mvc_post_json_ajax_var('Lancamentos', 'jsonAddTransferencia', variaveis);
+
+        if(retJson.erro){
+          $.gritter.add({
+  					title: 'Alerta',
+  					text: retJson.msg,
+  				});
+          var maxZindex = getHighIndex();
+          $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
+
+          return false;
+        } else {
+          $("#btnFiltrarLancamentos").click();
+        }
+      });
+      setTimeout("loadObjects()", 750);
+    }
+  });
+});
+
 $(document).on('click', '#frmFiltrosLancamentos #btnFiltrarLancamentos', function(){
 	var variaveis = $('#frmFiltrosLancamentos').serialize();
 

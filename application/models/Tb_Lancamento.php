@@ -381,8 +381,9 @@ class Tb_Lancamento extends CI_Model {
       return $arrRet;
     }
 
+    $vTipo  = (isset($arrLancamentoDados["lan_tipo"])) ? (float)$arrLancamentoDados["lan_tipo"]: "";
     $vValor = (isset($arrLancamentoDados["lan_valor"])) ? (float)$arrLancamentoDados["lan_valor"]: "";
-    if(!is_numeric($vValor) || !$vValor > 0){
+    if(!is_numeric($vValor) || (!$vValor > 0 && $vTipo != "T")){
       $arrRet["erro"] = true;
       $arrRet["msg"]  = "Por favor, informe um valor válido!";
       return $arrRet;
@@ -407,7 +408,7 @@ class Tb_Lancamento extends CI_Model {
 
     $vValorPg = (isset($arrLancamentoDados["lan_valor_pago"])) ? (float)$arrLancamentoDados["lan_valor_pago"]: "";
     if($vValorPg != ""){
-      if(!is_numeric($vValorPg) || $vValorPg < 0){
+      if(!is_numeric($vValorPg) || (!$vValorPg > 0 && $vTipo != "T")){
         $arrRet["erro"] = true;
         $arrRet["msg"]  = "Por favor, informe um valor pago válido!";
         return $arrRet;
@@ -445,10 +446,10 @@ class Tb_Lancamento extends CI_Model {
     $vIdParcela  = isset($arrLancamentoDados["lan_id_parcela"]) && is_numeric($arrLancamentoDados["lan_id_parcela"]) ? $arrLancamentoDados["lan_id_parcela"]: null;
     $vParcelaNr  = isset($arrLancamentoDados["lan_parcela_nr"]) && is_numeric($arrLancamentoDados["lan_parcela_nr"]) ? $arrLancamentoDados["lan_parcela_nr"]: null;
     $vVencimento = isset($arrLancamentoDados["lan_vencimento"]) && strlen($arrLancamentoDados["lan_vencimento"]) == 10 ? $arrLancamentoDados["lan_vencimento"]: null;
-    $vValor      = isset($arrLancamentoDados["lan_valor"]) && $arrLancamentoDados["lan_valor"] > 0 ? $arrLancamentoDados["lan_valor"]: null;
+    $vValor      = isset($arrLancamentoDados["lan_valor"]) ? $arrLancamentoDados["lan_valor"]: null;
     $vCategoria  = isset($arrLancamentoDados["lan_categoria"]) && $arrLancamentoDados["lan_categoria"] > 0 ? $arrLancamentoDados["lan_categoria"]: null;
     $vPagamento  = isset($arrLancamentoDados["lan_pagamento"]) && strlen($arrLancamentoDados["lan_pagamento"]) == 10 ? $arrLancamentoDados["lan_pagamento"]: null;
-    $vValorPago  = isset($arrLancamentoDados["lan_valor_pago"]) && $arrLancamentoDados["lan_valor_pago"] >= 0 ? $arrLancamentoDados["lan_valor_pago"]: null;
+    $vValorPago  = isset($arrLancamentoDados["lan_valor_pago"]) ? $arrLancamentoDados["lan_valor_pago"]: null;
     $vConta      = isset($arrLancamentoDados["lan_conta"]) && $arrLancamentoDados["lan_conta"] > 0 ? $arrLancamentoDados["lan_conta"]: null;
     $vObservacao = isset($arrLancamentoDados["lan_observacao"]) ? $arrLancamentoDados["lan_observacao"]: null;
 
@@ -639,5 +640,87 @@ class Tb_Lancamento extends CI_Model {
 
       return $arrRet;
     }
+  }
+
+  public function insertTransferencia($valor, $vencimento, $contaDe, $contaPara){
+    $arrRet         = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "";
+
+    $vVencimento = (isset($vencimento)) ? $vencimento: "";
+    $isVctoValid = isValidDate($vVencimento, "Y-m-d");
+    if(!$isVctoValid){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe uma data de vencimento válida!";
+      return $arrRet;
+    }
+
+    $vValor = (isset($valor)) ? (float)$valor: "";
+    if(!is_numeric($vValor) || !$vValor > 0){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe um valor válido!";
+      return $arrRet;
+    }
+
+    $vContaDe = isset($contaDe) ? $contaDe: "";
+    if(!is_numeric($vContaDe)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe a conta de origem (DE)!";
+      return $arrRet;
+    }
+
+    $vContaPara = isset($contaPara) ? $contaPara: "";
+    if(!is_numeric($vContaPara)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe a conta de destino (PARA)!";
+      return $arrRet;
+    }
+
+    if($vContaDe == $vContaPara){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe contas diferentes!";
+      return $arrRet;
+    }
+
+    $this->load->model("Tb_Conta");
+    $retContaDe  = $this->Tb_Conta->getConta($vContaDe);
+    $ContaDescDe = ($retContaDe["erro"]) ? $vContaDe: $retContaDe["arrContaDados"]["con_sigla"];
+
+    $retContaPara  = $this->Tb_Conta->getConta($vContaPara);
+    $ContaDescPara = ($retContaPara["erro"]) ? $vContaPara: $retContaPara["arrContaDados"]["con_sigla"];
+
+    // lancamento DE
+    $LancamentoDe = [];
+    $LancamentoDe["lan_despesa"]    = "Transf. De $ContaDescDe";
+    $LancamentoDe["lan_tipo"]       = "T";
+    $LancamentoDe["lan_categoria"]  = 40; // transferencia
+    $LancamentoDe["lan_vencimento"] = $vVencimento;
+    $LancamentoDe["lan_valor"]      = $vValor;
+    $LancamentoDe["lan_pagamento"]  = $vVencimento;
+    $LancamentoDe["lan_valor_pago"] = $vValor;
+    $LancamentoDe["lan_conta"]      = $vContaPara;
+    $LancamentoDe["lan_observacao"] = "";
+
+    $this->insert($LancamentoDe);
+    // =============
+
+    // lancamento PARA
+    $LancamentoPara = [];
+    $LancamentoPara["lan_despesa"]    = "Transf. Para $ContaDescPara";
+    $LancamentoPara["lan_tipo"]       = "T";
+    $LancamentoPara["lan_categoria"]  = 40; // transferencia
+    $LancamentoPara["lan_vencimento"] = $vVencimento;
+    $LancamentoPara["lan_valor"]      = "-" . $vValor;
+    $LancamentoPara["lan_pagamento"]  = $vVencimento;
+    $LancamentoPara["lan_valor_pago"] = "-" . $vValor;
+    $LancamentoPara["lan_conta"]      = $vContaDe;
+    $LancamentoPara["lan_observacao"] = "";
+
+    $this->insert($LancamentoPara);
+    // ===============
+
+    $arrRet["erro"] = false;
+    $arrRet["msg"]  = "";
+    return $arrRet;
   }
 }
