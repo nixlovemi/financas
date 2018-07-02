@@ -148,6 +148,21 @@ if($editar){
                 <textarea <?php echo $strReadyonly; ?> class="span10" name="lanObservacao" id="lanObservacao"><?php echo $vLanObservacao; ?></textarea>
               </div>
             </div>
+            <?php
+            if(!$detalhes && !$editar){
+              ?>
+              <div class="control-group">
+                <label class="control-label">Repetir nos próximos</label>
+                <div class="controls">
+                  <div class="input-append">
+                    <input class="span10 mask_inteiro" type="text" name="repeteMeses" id="repeteMeses" value="<?php echo $vLanId; ?>" />
+                    <span class="add-on">meses</span>
+                  </div>
+                </div>
+              </div>
+              <?php
+            }
+            ?>
             <div class="form-actions">
               <?php
               foreach($arrButtons as $button){

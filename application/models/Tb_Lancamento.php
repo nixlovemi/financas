@@ -92,7 +92,7 @@ class Tb_Lancamento extends CI_Model {
                           WHEN lan_tipo = 'T' THEN \"Transferência\"
                           ELSE \"**\"
                       END AS tipo ";
-    $vSql .= "        , lan_parcela_nr ";
+    $vSql .= "        , lan_parcela ";
     $vSql .= "        , lan_vencimento ";
     $vSql .= "        , lan_valor ";
     $vSql .= "        , bdp_descricao ";
@@ -115,7 +115,7 @@ class Tb_Lancamento extends CI_Model {
         $lanId      = $rs1["lan_id"];
         $lanDespesa = $rs1["lan_despesa"];
         $tipo       = $rs1["tipo"];
-        $parcNr     = $rs1["lan_parcela_nr"];
+        $parcNr     = $rs1["lan_parcela"];
         $lanVcto    = (strlen($rs1["lan_vencimento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_vencimento"])): "";
         $lanValor   = (is_numeric($rs1["lan_valor"])) ? "R$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
         $despesa    = $rs1["bdp_descricao"];
@@ -301,7 +301,7 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $this->load->database();
-    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_id_parcela, lan_parcela_nr, lan_vencimento, lan_valor, lan_categoria, bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao");
+    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_parcela, lan_vencimento, lan_valor, lan_categoria, bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao");
     $this->db->from("tb_lancamento");
     $this->db->join("tb_base_despesa", "bdp_id = lan_categoria", "left");
     $this->db->join("tb_conta", "con_id = lan_conta", "left");
@@ -331,8 +331,7 @@ class Tb_Lancamento extends CI_Model {
       $arrLancamentoDados["lan_despesa"]    = $row->lan_despesa;
       $arrLancamentoDados["lan_tipo"]       = $row->lan_tipo;
       $arrLancamentoDados["str_tipo"]       = $strTipo;
-      $arrLancamentoDados["lan_id_parcela"] = $row->lan_id_parcela;
-      $arrLancamentoDados["lan_parcela_nr"] = $row->lan_parcela_nr;
+      $arrLancamentoDados["lan_parcela"]    = $row->lan_parcela;
       $arrLancamentoDados["lan_vencimento"] = $row->lan_vencimento;
       $arrLancamentoDados["lan_valor"]      = $row->lan_valor;
       $arrLancamentoDados["lan_categoria"]  = $row->lan_categoria;
@@ -429,7 +428,7 @@ class Tb_Lancamento extends CI_Model {
     return $arrRet;
   }
 
-  public function insert($arrLancamentoDados){
+  public function insert($arrLancamentoDados, $repeteMeses=null){
     $arrRet         = [];
     $arrRet["erro"] = true;
     $arrRet["msg"]  = "";
@@ -440,11 +439,12 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $this->load->database();
+    $this->load->helpers("utils");
+    $this->db->trans_start();
 
     $vDespesa    = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: null;
     $vTipo       = isset($arrLancamentoDados["lan_tipo"]) ? $arrLancamentoDados["lan_tipo"]: null;
-    $vIdParcela  = isset($arrLancamentoDados["lan_id_parcela"]) && is_numeric($arrLancamentoDados["lan_id_parcela"]) ? $arrLancamentoDados["lan_id_parcela"]: null;
-    $vParcelaNr  = isset($arrLancamentoDados["lan_parcela_nr"]) && is_numeric($arrLancamentoDados["lan_parcela_nr"]) ? $arrLancamentoDados["lan_parcela_nr"]: null;
+    $vParcela    = isset($arrLancamentoDados["lan_parcela"]) && $arrLancamentoDados["lan_parcela"] != "" ? $arrLancamentoDados["lan_parcela"]: null;
     $vVencimento = isset($arrLancamentoDados["lan_vencimento"]) && strlen($arrLancamentoDados["lan_vencimento"]) == 10 ? $arrLancamentoDados["lan_vencimento"]: null;
     $vValor      = isset($arrLancamentoDados["lan_valor"]) ? $arrLancamentoDados["lan_valor"]: null;
     $vCategoria  = isset($arrLancamentoDados["lan_categoria"]) && $arrLancamentoDados["lan_categoria"] > 0 ? $arrLancamentoDados["lan_categoria"]: null;
@@ -456,8 +456,7 @@ class Tb_Lancamento extends CI_Model {
     $data = array(
       'lan_despesa'    => $vDespesa,
       'lan_tipo'       => $vTipo,
-      'lan_id_parcela' => $vIdParcela,
-      'lan_parcela_nr' => $vParcelaNr,
+      'lan_parcela'    => $vParcela,
       'lan_vencimento' => $vVencimento,
       'lan_valor'      => $vValor,
       'lan_categoria'  => $vCategoria,
@@ -467,7 +466,44 @@ class Tb_Lancamento extends CI_Model {
       'lan_observacao' => $vObservacao,
     );
 
-    $retInsert = $this->db->insert('tb_lancamento', $data);
+    $vezes       = (is_numeric($repeteMeses) && $repeteMeses > 0) ? (1 + $repeteMeses): 1;
+    $arrData     = explode("-", $data["lan_vencimento"]);
+    $diaOriginal = str_pad($arrData[2], 2, "0", STR_PAD_LEFT);
+    
+    for($i=1; $i<=$vezes;$i++){
+      if($vezes > 1){
+        $data["lan_parcela"] = "$i de $vezes";
+      }
+
+      $this->db->insert('tb_lancamento', $data);
+
+      // configura proximo vencimento
+      $arrData = explode("-", $data["lan_vencimento"]);
+      $dia     = $diaOriginal;
+      $mes     = $arrData[1] + 1;
+      $ano     = $arrData[0];
+
+      if($mes > 12){
+        $mes = 1;
+        $ano++;
+      }
+
+      $dia = str_pad($dia, 2, "0", STR_PAD_LEFT);
+      $mes = str_pad($mes, 2, "0", STR_PAD_LEFT);
+
+      $novaData = $ano . "-" . $mes . "-" . $dia;
+      $validDate = isValidDate($novaData, 'Y-m-d');
+      while($validDate == false){
+        $novaData = date('Y-m-t', strtotime($ano . "-" . $mes . "-01"));
+        $validDate = isValidDate($novaData, 'Y-m-d');
+      }
+
+      $data["lan_vencimento"] = $novaData;
+      // ============================
+    }
+
+    $this->db->trans_complete();
+    $retInsert = $this->db->trans_status();
     if(!$retInsert){
       $arrRet["erro"] = true;
       $arrRet["msg"]  = $this->db->_error_message();
@@ -578,8 +614,7 @@ class Tb_Lancamento extends CI_Model {
     $vLanId      = (isset($arrLancamentoDados["lan_id"])) ? $arrLancamentoDados["lan_id"]: "";
     $vDespesa    = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: null;
     $vTipo       = isset($arrLancamentoDados["lan_tipo"]) ? $arrLancamentoDados["lan_tipo"]: null;
-    $vIdParcela  = isset($arrLancamentoDados["lan_id_parcela"]) && is_numeric($arrLancamentoDados["lan_id_parcela"]) ? $arrLancamentoDados["lan_id_parcela"]: null;
-    $vParcelaNr  = isset($arrLancamentoDados["lan_parcela_nr"]) && is_numeric($arrLancamentoDados["lan_parcela_nr"]) ? $arrLancamentoDados["lan_parcela_nr"]: null;
+    $vParcela    = isset($arrLancamentoDados["lan_parcela"]) && $arrLancamentoDados["lan_parcela"] != "" ? $arrLancamentoDados["lan_parcela"]: null;
     $vVencimento = isset($arrLancamentoDados["lan_vencimento"]) && strlen($arrLancamentoDados["lan_vencimento"]) == 10 ? $arrLancamentoDados["lan_vencimento"]: null;
     $vValor      = isset($arrLancamentoDados["lan_valor"]) && $arrLancamentoDados["lan_valor"] > 0 ? $arrLancamentoDados["lan_valor"]: null;
     $vCategoria  = isset($arrLancamentoDados["lan_categoria"]) && $arrLancamentoDados["lan_categoria"] > 0 ? $arrLancamentoDados["lan_categoria"]: null;
@@ -592,8 +627,7 @@ class Tb_Lancamento extends CI_Model {
     $Lancamento["lan_id"]         = $vLanId;
     $Lancamento["lan_despesa"]    = $vDespesa;
     $Lancamento["lan_tipo"]       = $vTipo;
-    $Lancamento["lan_id_parcela"] = $vIdParcela;
-    $Lancamento["lan_parcela_nr"] = $vParcelaNr;
+    $Lancamento["lan_parcela"]    = $vParcela;
     $Lancamento["lan_vencimento"] = $vVencimento;
     $Lancamento["lan_valor"]      = $vValor;
     $Lancamento["lan_categoria"]  = $vCategoria;
