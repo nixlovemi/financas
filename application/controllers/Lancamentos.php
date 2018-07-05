@@ -9,6 +9,9 @@ class Lancamentos extends MY_Controller {
   public function index(){
     $data = [];
 
+    $vMesBase = date("m");
+    $vAnoBase = date("Y");
+
     $this->load->model('Tb_Lancamento');
     $htmlLancamentos         = $this->Tb_Lancamento->getHtmlLancamentos();
     $data["htmlLancamentos"] = $htmlLancamentos;
@@ -17,6 +20,9 @@ class Lancamentos extends MY_Controller {
     $data["htmlTotaisGastos"] = $htmlTotaisGastos;
 
     $this->load->model('Tb_Conta');
+    $htmlSaldoContas         = $this->Tb_Conta->getHtmlSaldoContas($vMesBase, $vAnoBase);
+    $data["htmlSaldoContas"] = $htmlSaldoContas;
+
     $retContas = $this->Tb_Conta->getContas();
     $arrContas = ($retContas["erro"] == false) ? $retContas["arrContas"]: array();
     $data["arrContas"] = $arrContas;
