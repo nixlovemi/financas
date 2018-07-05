@@ -114,6 +114,7 @@ class Lancamentos extends MY_Controller {
     $vVctoFim    = $this->input->post('filterDtVctoFim');
     $vPgtoIni    = $this->input->post('filterDtPgtoIni');
     $vPgtoFim    = $this->input->post('filterDtPgtoFim');
+    $vDescricao  = $this->input->post('filterDescricao');
     $vContaId    = $this->input->post('filterContas');
     $vTipo       = $this->input->post('filterTipo');
     $vCategoria  = $this->input->post('filterCategoria');
@@ -145,6 +146,10 @@ class Lancamentos extends MY_Controller {
 
     if($vPgtoFim != ""){
       $arrFilters["pgtoFim"] = acerta_data($vPgtoFim);
+    }
+
+    if($vDescricao != ""){
+      $arrFilters["descricao"] = $vDescricao;
     }
 
     if($vContaId != ""){

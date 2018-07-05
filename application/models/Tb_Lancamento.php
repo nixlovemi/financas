@@ -9,6 +9,7 @@ class Tb_Lancamento extends CI_Model {
     $vVctoFim   = isset($arrFilters["vctoFim"]) ? $arrFilters["vctoFim"]: "";
     $vPgtoIni   = isset($arrFilters["pgtoIni"]) ? $arrFilters["pgtoIni"]: "";
     $vPgtoFim   = isset($arrFilters["pgtoFim"]) ? $arrFilters["pgtoFim"]: "";
+    $vDescricao = isset($arrFilters["descricao"]) ? $arrFilters["descricao"]: "";
     $vConta     = isset($arrFilters["conta"]) ? $arrFilters["conta"]: "";
     $vTipo      = isset($arrFilters["tipo"]) ? $arrFilters["tipo"]: "";
     $vCategoria = isset($arrFilters["categoria"]) ? $arrFilters["categoria"]: "";
@@ -48,6 +49,10 @@ class Tb_Lancamento extends CI_Model {
 
     if($vAnoBase != ""){
       $sqlFilter .= " AND EXTRACT(YEAR FROM lan_vencimento) = $vAnoBase ";
+    }
+
+    if($vDescricao != ""){
+      $sqlFilter .= " AND lan_despesa LIKE '%$vDescricao%' ";
     }
 
     if(is_numeric($vConta)){

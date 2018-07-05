@@ -88,6 +88,12 @@ if(isset($errorMsg) && $errorMsg != ""){
           </div>
         </div>
         <div class="control-group">
+          <label class="control-label">Descrição</label>
+          <div class="controls">
+            <input value="" class="span6" type="text" id="filterDescricao" name="filterDescricao" />
+          </div>
+        </div>
+        <div class="control-group">
           <label class="control-label">Contas</label>
           <div class="controls">
             <select class='span6 m-wrap' name='filterContas' id='filterContas'>
