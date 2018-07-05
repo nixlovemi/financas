@@ -18,28 +18,36 @@ class Tb_Lancamento extends CI_Model {
     // sql filter
     $sqlFilter = "";
 
+    if($vVctoIni != ""){
+      $vMesBase   = "";
+      $vAnoBase   = "";
+      $sqlFilter .= " AND lan_vencimento >= '$vVctoIni' ";
+    }
+
+    if($vVctoFim != ""){
+      $vMesBase   = "";
+      $vAnoBase   = "";
+      $sqlFilter .= " AND lan_vencimento <= '$vVctoFim' ";
+    }
+
+    if($vPgtoIni != ""){
+      $vMesBase   = "";
+      $vAnoBase   = "";
+      $sqlFilter .= " AND lan_pagamento >= '$vPgtoIni' ";
+    }
+
+    if($vPgtoFim != ""){
+      $vMesBase   = "";
+      $vAnoBase   = "";
+      $sqlFilter .= " AND lan_pagamento <= '$vPgtoFim' ";
+    }
+
     if($vMesBase != ""){
       $sqlFilter .= " AND EXTRACT(MONTH FROM lan_vencimento) = $vMesBase ";
     }
 
     if($vAnoBase != ""){
       $sqlFilter .= " AND EXTRACT(YEAR FROM lan_vencimento) = $vAnoBase ";
-    }
-
-    if($vVctoIni != ""){
-      $sqlFilter .= " AND lan_vencimento >= '$vVctoIni' ";
-    }
-
-    if($vVctoFim != ""){
-      $sqlFilter .= " AND lan_vencimento <= '$vVctoFim' ";
-    }
-
-    if($vPgtoIni != ""){
-      $sqlFilter .= " AND lan_pagamento >= '$vPgtoIni' ";
-    }
-
-    if($vPgtoFim != ""){
-      $sqlFilter .= " AND lan_pagamento <= '$vPgtoFim' ";
     }
 
     if(is_numeric($vConta)){
@@ -96,6 +104,7 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= "        , lan_vencimento ";
     $vSql .= "        , lan_valor ";
     $vSql .= "        , bdp_descricao ";
+    $vSql .= "        , bdp_contabiliza ";
     $vSql .= "        , lan_pagamento ";
     $vSql .= "        , lan_valor_pago ";
     $vSql .= "        , con_sigla ";
@@ -104,14 +113,29 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= " LEFT JOIN tb_conta ON con_id = lan_conta ";
     $vSql .= " WHERE 1=1 ";
     $vSql .= " $sqlFilter ";
-    $vSql .= " ORDER BY lan_vencimento ";
+    $vSql .= " ORDER BY lan_vencimento, lan_id ";
 
     $query = $this->db->query($vSql);
     $arrRs = $query->result_array();
 
+    $totValorRec     = 0;
+    $totValorPgRec   = 0;
+    $totValorDesp    = 0;
+    $totValorPgDesp  = 0;
+
     if(count($arrRs) <= 0){
     } else {
       foreach($arrRs as $rs1){
+        if($rs1["bdp_contabiliza"] == 1){
+          if($rs1["tipo"] == "Despesa"){
+            $totValorDesp   += $rs1["lan_valor"];
+            $totValorPgDesp += $rs1["lan_valor_pago"];
+          } else if($rs1["tipo"] == "Receita"){
+            $totValorRec   += $rs1["lan_valor"];
+            $totValorPgRec += $rs1["lan_valor_pago"];
+          }
+        }
+
         $lanId      = $rs1["lan_id"];
         $lanDespesa = $rs1["lan_despesa"];
         $tipo       = $rs1["tipo"];
@@ -144,6 +168,50 @@ class Tb_Lancamento extends CI_Model {
 
     $htmlTable .= "  </tbody>";
     $htmlTable .= "</table>";
+
+    $htmlTable .= "<br />";
+    $htmlTable .= "<div class='widget-box widget-plain'>";
+    $htmlTable .= "  <div class='center'>";
+    $htmlTable .= "    <ul class='stat-boxes2'>";
+    $htmlTable .= "      <li>
+                          <div class='left'>
+                            <i style='font-size:43px;' class='icon icon-money'></i>
+                          </div>
+                          <div class='right'>
+                            <strong>R$".number_format($totValorRec, 2, ",", ".")."</strong>
+                            Total Valor (Receita)
+                          </div>
+                        </li>";
+    $htmlTable .= "     <li>
+                          <div class='left'>
+                            <i style='font-size:43px;' class='icon icon-money'></i>
+                          </div>
+                          <div class='right'>
+                            <strong>R$".number_format($totValorPgRec, 2, ",", ".")."</strong>
+                            Total Pago (Receita)
+                          </div>
+                        </li>";
+    $htmlTable .= "     <li>
+                          <div class='left'>
+                            <i style='font-size:43px;' class='icon icon-money'></i>
+                          </div>
+                          <div class='right'>
+                            <strong>R$".number_format($totValorDesp, 2, ",", ".")."</strong>
+                            Total Valor (Despesa)
+                          </div>
+                        </li>";
+    $htmlTable .= "     <li>
+                          <div class='left'>
+                            <i style='font-size:43px;' class='icon icon-money'></i>
+                          </div>
+                          <div class='right'>
+                            <strong>R$".number_format($totValorPgDesp, 2, ",", ".")."</strong>
+                            Total Pago (Despesa)
+                          </div>
+                        </li>";
+    $htmlTable .= "    </ul>";
+    $htmlTable .= "  </div>";
+    $htmlTable .= "</div>";
 
     return $htmlTable;
   }
@@ -469,7 +537,7 @@ class Tb_Lancamento extends CI_Model {
     $vezes       = (is_numeric($repeteMeses) && $repeteMeses > 0) ? (1 + $repeteMeses): 1;
     $arrData     = explode("-", $data["lan_vencimento"]);
     $diaOriginal = str_pad($arrData[2], 2, "0", STR_PAD_LEFT);
-    
+
     for($i=1; $i<=$vezes;$i++){
       if($vezes > 1){
         $data["lan_parcela"] = "$i de $vezes";

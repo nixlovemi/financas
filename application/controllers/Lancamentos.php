@@ -171,6 +171,10 @@ class Lancamentos extends MY_Controller {
     $htmlTotaisGastos           = $this->Tb_Lancamento->getHtmlTotaisGastos($arrFilters);
     $arrRet["htmlTotaisGastos"] = $htmlTotaisGastos;
 
+    $this->load->model('Tb_Conta');
+    $htmlSaldoContas           = $this->Tb_Conta->getHtmlSaldoContas($vMesBase, $vAnoBase);
+    $arrRet["htmlSaldoContas"] = $htmlSaldoContas;
+
     echo json_encode($arrRet);
   }
 

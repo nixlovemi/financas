@@ -314,11 +314,12 @@ $(document).on('click', '#frmFiltrosLancamentos #btnFiltrarLancamentos', functio
 		dataType: 'json',
     beforeSend: function(){
       var htmlLoader = getHtmlLoader();
-      $("#dvHtmlLancamentos, #dvHtmlTotaisGastos").html(htmlLoader);
+      $("#dvHtmlSaldoContas, #dvHtmlLancamentos, #dvHtmlTotaisGastos").html(htmlLoader);
     },
 		success: function (ret) {
 			var erro             = ret.erro;
 			var msg              = ret.msg;
+      var htmlSaldoContas  = ret.htmlSaldoContas;
 			var htmlLancamentos  = ret.htmlLancamentos;
       var htmlTotaisGastos = ret.htmlTotaisGastos;
 
@@ -328,6 +329,7 @@ $(document).on('click', '#frmFiltrosLancamentos #btnFiltrarLancamentos', functio
 					text: msg,
 				});
 			} else {
+        $("#dvHtmlSaldoContas").html(htmlSaldoContas);
         $("#dvHtmlLancamentos").html(htmlLancamentos);
         $("#dvHtmlTotaisGastos").html(htmlTotaisGastos);
         setTimeout("loadObjects();", 500);

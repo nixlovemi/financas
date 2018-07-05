@@ -1,6 +1,7 @@
 <?php
 $htmlLancamentos  = isset($htmlLancamentos) ? $htmlLancamentos: "";
 $htmlTotaisGastos = isset($htmlTotaisGastos) ? $htmlTotaisGastos: "";
+$htmlSaldoContas  = isset($htmlSaldoContas) ? $htmlSaldoContas: "";
 $arrContas        = isset($arrContas) ? $arrContas: array();
 $arrBaseDesp      = isset($arrBaseDesp) ? $arrBaseDesp: array();
 
@@ -37,6 +38,7 @@ if(isset($errorMsg) && $errorMsg != ""){
             <select id="mes_base" name="mes_base">
               <?php
               $arrMes     = [];
+              $arrMes[""] = "";
               $arrMes[1]  = "Janeiro";
               $arrMes[2]  = "Fevereiro";
               $arrMes[3]  = "Março";
@@ -58,6 +60,7 @@ if(isset($errorMsg) && $errorMsg != ""){
             </select>
             &nbsp;&nbsp;
             <select id="ano_base" name="ano_base">
+              <option value=""></option>
               <?php
               $anoLimite = date("Y") + 2;
               for($i=2018;$i<=$anoLimite;$i++){
@@ -144,6 +147,17 @@ if(isset($errorMsg) && $errorMsg != ""){
         </div>
       </form>
     </div>
+  </div>
+</div>
+
+<div class="widget-box">
+  <div class="widget-title"> <span class="icon"><i class="icon icon-money"></i></span>
+    <h5>Saldo Contas</h5>
+  </div>
+  <div class="widget-content nopadding" id="dvHtmlSaldoContas">
+    <?php
+    echo $htmlSaldoContas;
+    ?>
   </div>
 </div>
 
