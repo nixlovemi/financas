@@ -72,6 +72,7 @@ class Lancamentos extends MY_Controller {
     $lanValorPago  = ($this->input->post('lanValorPago') != "") ? acerta_moeda($this->input->post('lanValorPago')): null;
     $lanConta      = ($this->input->post('lanConta') != "") ? $this->input->post('lanConta'): null;
     $lanObservacao = ($this->input->post('lanObservacao') != "") ? $this->input->post('lanObservacao'): null;
+    $lanConfirmado = ($this->input->post('lanConfirmado') != "") ? $this->input->post('lanConfirmado'): 0;
     $repeteMeses   = (is_numeric($this->input->post('repeteMeses')) && $this->input->post('repeteMeses') > 0) ? $this->input->post('repeteMeses'): null;
     // ======================
 
@@ -85,6 +86,7 @@ class Lancamentos extends MY_Controller {
     $Lancamento["lan_valor_pago"] = $lanValorPago;
     $Lancamento["lan_conta"]      = $lanConta;
     $Lancamento["lan_observacao"] = $lanObservacao;
+    $Lancamento["lan_confirmado"] = $lanConfirmado;
 
     $this->load->model('Tb_Lancamento');
     $retInsert = $this->Tb_Lancamento->insert($Lancamento, $repeteMeses);
@@ -267,6 +269,7 @@ class Lancamentos extends MY_Controller {
     $lanValorPago  = ($this->input->post('lanValorPago') != "") ? acerta_moeda($this->input->post('lanValorPago')): null;
     $lanConta      = ($this->input->post('lanConta') != "") ? $this->input->post('lanConta'): null;
     $lanObservacao = ($this->input->post('lanObservacao') != "") ? $this->input->post('lanObservacao'): null;
+    $lanConfirmado = ($this->input->post('lanConfirmado') != "") ? $this->input->post('lanConfirmado'): 0;
     // ======================
 
     $this->load->model('Tb_Lancamento');
@@ -290,6 +293,7 @@ class Lancamentos extends MY_Controller {
     $Lancamento["lan_valor_pago"] = $lanValorPago;
     $Lancamento["lan_conta"]      = $lanConta;
     $Lancamento["lan_observacao"] = $lanObservacao;
+    $Lancamento["lan_confirmado"] = $lanConfirmado;
 
     $retUpdate = $this->Tb_Lancamento->edit($Lancamento);
     if( $retUpdate["erro"] ){

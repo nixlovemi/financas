@@ -113,6 +113,7 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= "        , lan_pagamento ";
     $vSql .= "        , lan_valor_pago ";
     $vSql .= "        , con_sigla ";
+    $vSql .= "        , lan_confirmado ";
     $vSql .= " FROM tb_lancamento ";
     $vSql .= " LEFT JOIN tb_base_despesa ON bdp_id = lan_categoria ";
     $vSql .= " LEFT JOIN tb_conta ON con_id = lan_conta ";
@@ -152,9 +153,11 @@ class Tb_Lancamento extends CI_Model {
         $lanVlrPg   = (is_numeric($rs1["lan_valor_pago"])) ? "R$ " . number_format($rs1["lan_valor_pago"], 2, ",", "."): "";
         $conta      = $rs1["con_sigla"];
 
+        $cssColor   = ($rs1["lan_confirmado"] == 1) ? "color:#3079ca;": "";
+
         $htmlTable .= "<tr>";
-        $htmlTable .= "  <td>$lanId</td>";
-        $htmlTable .= "  <td>$lanDespesa</td>";
+        $htmlTable .= "  <td><span style='$cssColor'>$lanId</span></td>";
+        $htmlTable .= "  <td><span style='$cssColor'>$lanDespesa</span></td>";
         $htmlTable .= "  <td>$tipo</td>";
         $htmlTable .= "  <td>$parcNr</td>";
         $htmlTable .= "  <td>$lanVcto</td>";
@@ -374,7 +377,7 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $this->load->database();
-    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_parcela, lan_vencimento, lan_valor, lan_categoria, bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao");
+    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_parcela, lan_vencimento, lan_valor, lan_categoria, bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao, lan_confirmado");
     $this->db->from("tb_lancamento");
     $this->db->join("tb_base_despesa", "bdp_id = lan_categoria", "left");
     $this->db->join("tb_conta", "con_id = lan_conta", "left");
@@ -415,6 +418,7 @@ class Tb_Lancamento extends CI_Model {
       $arrLancamentoDados["con_nome"]       = $row->con_nome;
       $arrLancamentoDados["con_sigla"]      = $row->con_sigla;
       $arrLancamentoDados["lan_observacao"] = $row->lan_observacao;
+      $arrLancamentoDados["lan_confirmado"] = $row->lan_confirmado;
 
       $arrRet["arrLancamentoDados"] = $arrLancamentoDados;
     }
@@ -525,6 +529,7 @@ class Tb_Lancamento extends CI_Model {
     $vValorPago  = isset($arrLancamentoDados["lan_valor_pago"]) ? $arrLancamentoDados["lan_valor_pago"]: null;
     $vConta      = isset($arrLancamentoDados["lan_conta"]) && $arrLancamentoDados["lan_conta"] > 0 ? $arrLancamentoDados["lan_conta"]: null;
     $vObservacao = isset($arrLancamentoDados["lan_observacao"]) ? $arrLancamentoDados["lan_observacao"]: null;
+    $vConfirmado = isset($arrLancamentoDados["lan_confirmado"]) ? $arrLancamentoDados["lan_confirmado"]: 0;
 
     $data = array(
       'lan_despesa'    => $vDespesa,
@@ -537,6 +542,7 @@ class Tb_Lancamento extends CI_Model {
       'lan_valor_pago' => $vValorPago,
       'lan_conta'      => $vConta,
       'lan_observacao' => $vObservacao,
+      'lan_confirmado' => $vConfirmado,
     );
 
     $vezes       = (is_numeric($repeteMeses) && $repeteMeses > 0) ? (1 + $repeteMeses): 1;
@@ -695,6 +701,7 @@ class Tb_Lancamento extends CI_Model {
     $vValorPago  = isset($arrLancamentoDados["lan_valor_pago"]) && $arrLancamentoDados["lan_valor_pago"] >= 0 ? $arrLancamentoDados["lan_valor_pago"]: null;
     $vConta      = isset($arrLancamentoDados["lan_conta"]) && $arrLancamentoDados["lan_conta"] > 0 ? $arrLancamentoDados["lan_conta"]: null;
     $vObservacao = isset($arrLancamentoDados["lan_observacao"]) ? $arrLancamentoDados["lan_observacao"]: null;
+    $vConfirmado = isset($arrLancamentoDados["lan_confirmado"]) ? $arrLancamentoDados["lan_confirmado"]: 0;
 
     $Lancamento = [];
     $Lancamento["lan_id"]         = $vLanId;
@@ -708,6 +715,7 @@ class Tb_Lancamento extends CI_Model {
     $Lancamento["lan_valor_pago"] = $vValorPago;
     $Lancamento["lan_conta"]      = $vConta;
     $Lancamento["lan_observacao"] = $vObservacao;
+    $Lancamento["lan_confirmado"] = $vConfirmado;
 
     $this->db->where('lan_id', $vLanId);
     $retInsert = $this->db->update('tb_lancamento', $Lancamento);

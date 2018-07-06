@@ -23,6 +23,9 @@ $vLanPagamento  = isset($Lancamento["lan_pagamento"]) && strlen($Lancamento["lan
 $vLanValorPago  = isset($Lancamento["lan_valor_pago"]) ? number_format($Lancamento["lan_valor_pago"], 2, ",", ""): "";
 $vLanConta      = isset($Lancamento["lan_conta"]) ? $Lancamento["lan_conta"]: "";
 $vLanObservacao = isset($Lancamento["lan_observacao"]) ? $Lancamento["lan_observacao"]: "";
+$vLanConfirmado = isset($Lancamento["lan_confirmado"]) ? $Lancamento["lan_confirmado"]: 0;
+
+$vCheckConfirm  = $vLanConfirmado == 1 ? " checked ": "";
 
 if($editar){
   $h1Title = "Editar Lançamento";
@@ -146,6 +149,12 @@ if($editar){
               <label class="control-label">Observação</label>
               <div class="controls">
                 <textarea <?php echo $strReadyonly; ?> class="span10" name="lanObservacao" id="lanObservacao"><?php echo $vLanObservacao; ?></textarea>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label">Confirmado</label>
+              <div class="controls">
+                <input <?php echo $vCheckConfirm; ?> type="checkbox" name="lanConfirmado" id="lanConfirmado" value="1" />
               </div>
             </div>
             <?php
