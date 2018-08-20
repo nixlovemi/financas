@@ -124,10 +124,12 @@ class Tb_Lancamento extends CI_Model {
     $query = $this->db->query($vSql);
     $arrRs = $query->result_array();
 
-    $totValorRec     = 0;
-    $totValorPgRec   = 0;
-    $totValorDesp    = 0;
-    $totValorPgDesp  = 0;
+    $totValorRec      = 0;
+    $totValorPgRec    = 0;
+    $totValorDesp     = 0;
+    $totValorPgDesp   = 0;
+    $totNaoContabRec  = 0;
+    $totNaoContabDesp = 0;
 
     if(count($arrRs) <= 0){
     } else {
@@ -139,6 +141,12 @@ class Tb_Lancamento extends CI_Model {
           } else if($rs1["tipo"] == "Receita"){
             $totValorRec   += $rs1["lan_valor"];
             $totValorPgRec += $rs1["lan_valor_pago"];
+          }
+        } else {
+          if($rs1["tipo"] == "Despesa"){
+            $totNaoContabDesp += $rs1["lan_valor"];
+          } else if($rs1["tipo"] == "Receita"){
+            $totNaoContabRec += $rs1["lan_valor"];
           }
         }
 
@@ -204,6 +212,15 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
+                            <strong>R$".number_format($totNaoContabRec, 2, ",", ".")."</strong>
+                            Total N&atilde;o Contabilizado (Receita)
+                          </div>
+                        </li>";
+    $htmlTable .= "     <li>
+                          <div class='left'>
+                            <i style='font-size:43px;' class='icon icon-money'></i>
+                          </div>
+                          <div class='right'>
                             <strong>R$".number_format($totValorDesp, 2, ",", ".")."</strong>
                             Total Valor (Despesa)
                           </div>
@@ -215,6 +232,15 @@ class Tb_Lancamento extends CI_Model {
                           <div class='right'>
                             <strong>R$".number_format($totValorPgDesp, 2, ",", ".")."</strong>
                             Total Pago (Despesa)
+                          </div>
+                        </li>";
+    $htmlTable .= "     <li>
+                          <div class='left'>
+                            <i style='font-size:43px;' class='icon icon-money'></i>
+                          </div>
+                          <div class='right'>
+                            <strong>R$".number_format($totNaoContabDesp, 2, ",", ".")."</strong>
+                            Total N&atilde;o Contabilizado (Despesa)
                           </div>
                         </li>";
     $htmlTable .= "    </ul>";
