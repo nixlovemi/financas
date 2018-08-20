@@ -416,4 +416,79 @@ class Lancamentos extends MY_Controller {
       return;
     }
   }
+
+  public function jsonHtmlBaixaLctoGrupo(){
+    $data           = [];
+    $arrRet         = [];
+    $arrRet["html"] = "";
+
+    // variaveis ===========
+    $strLanIds = $this->input->post('strLanIds') != "" ? $this->input->post('strLanIds'): "";
+    $arrLanId  = ($strLanIds != "") ? explode(",", $strLanIds): array();
+    // =====================
+
+    if(count($arrLanId) <= 0){
+      $this->load->helpers("alerts");
+      $arrRet["html"] = showWarning("Nenhum lan&ccedil;amento selecionado!");
+    } else {
+      $this->load->model("Tb_Conta");
+      $retContas = $this->Tb_Conta->getContas();
+      $arrContas = ($retContas["erro"] == false) ? $retContas["arrContas"]: array();
+      $data["arrContas"] = $arrContas;
+
+      $this->load->model("Tb_Lancamento");
+      $retHtmlLcto      = $this->Tb_Lancamento->getHtmlBaixaGrupo($arrLanId);
+      $data["htmlLcto"] = $retHtmlLcto;
+
+      $data["strLanIds"] = $strLanIds;
+      $htmlView = $this->load->view('Lancamentos/htmlBaixaLctoGrupo', $data, true);
+
+      $arrRet["html"] = $htmlView;
+    }
+
+    echo json_encode($arrRet);
+  }
+
+  public function jsonPostBaixaLctoGrupo(){
+    $this->load->helpers("utils");
+    $this->load->model("Tb_Lancamento");
+
+    $arrRet = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "Erro";
+
+    // variaveis ==============
+    $lanIds       = $this->input->post('lan_ids') != "" ? $this->input->post('lan_ids'): "";
+    $lanPagamento = $this->input->post('lanPagamento') != "" ? acerta_data($this->input->post('lanPagamento')): "";
+    $lanConta     = is_numeric($this->input->post('lanConta')) ? $this->input->post('lanConta'): "";
+    // ========================
+
+    if($lanIds == ""){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Nenhum lan&ccedil;amento selecionado!";
+    } else {
+      $arrLancamentos = explode(",", $lanIds);
+      if(count($arrLancamentos) <= 0){
+        $arrRet["erro"] = true;
+        $arrRet["msg"]  = "Nenhum lan&ccedil;amento selecionado!";
+      } else {
+        foreach($arrLancamentos as $lanId){
+          $retLancamento = $this->Tb_Lancamento->getLancamento($lanId);
+          if(!$retLancamento["erro"]){
+            $Lancamento = $retLancamento["arrLancamentoDados"];
+            $Lancamento["lan_pagamento"]  = $lanPagamento;
+            $Lancamento["lan_valor_pago"] = $Lancamento["lan_valor"];
+            $Lancamento["lan_conta"]      = $lanConta;
+
+            $this->Tb_Lancamento->edit($Lancamento);
+          }
+        }
+
+        $arrRet["erro"] = false;
+        $arrRet["msg"]  = "Lan&ccedil;amentos baixados com sucesso!";
+      }
+    }
+
+    echo json_encode($arrRet);
+  }
 }

@@ -76,9 +76,13 @@ class Tb_Lancamento extends CI_Model {
 
     $this->load->database();
     $htmlTable  = "";
+    $htmlTable .= "<div style='display:block; margin:8px 0 15px 4px'>";
+    $htmlTable .= "  <a class='btn btn-info' href='javascript:;' id='btnBaixaLctoGrupo'>DAR BAIXA EM GRUPO</a>";
+    $htmlTable .= "</div>";
     $htmlTable .= "<table class='table table-bordered dynatable' id='tbProdutoGetHtmlList'>";
     $htmlTable .= "  <thead>";
     $htmlTable .= "    <tr>";
+    $htmlTable .= "      <th>&nbsp;</th>";
     $htmlTable .= "      <th>ID</th>";
     $htmlTable .= "      <th>Descrição</th>";
     $htmlTable .= "      <th>Tipo</th>";
@@ -164,6 +168,7 @@ class Tb_Lancamento extends CI_Model {
         $cssColor   = ($rs1["lan_confirmado"] == 1) ? "color:#3079ca;": "";
 
         $htmlTable .= "<tr>";
+        $htmlTable .= "  <td><input type='checkbox' name='ckbLancamentos' value='$lanId' /></td>";
         $htmlTable .= "  <td><span style='$cssColor'>$lanId</span></td>";
         $htmlTable .= "  <td><span style='$cssColor'>$lanDespesa</span></td>";
         $htmlTable .= "  <td>$tipo</td>";
@@ -246,6 +251,82 @@ class Tb_Lancamento extends CI_Model {
     $htmlTable .= "    </ul>";
     $htmlTable .= "  </div>";
     $htmlTable .= "</div>";
+
+    return $htmlTable;
+  }
+
+  public function getHtmlBaixaGrupo($arrLanId){
+    $this->load->database();
+    $htmlTable  = "";
+    $htmlTable .= "<table class='table table-bordered' id='tbGetHtmlBaixaGrupo'>";
+    $htmlTable .= "  <thead>";
+    $htmlTable .= "    <tr>";
+    $htmlTable .= "      <th>ID</th>";
+    $htmlTable .= "      <th>Descrição</th>";
+    $htmlTable .= "      <th>Tipo</th>";
+    $htmlTable .= "      <th>Parcela</th>";
+    $htmlTable .= "      <th>Vencimento</th>";
+    $htmlTable .= "      <th>Valor</th>";
+    $htmlTable .= "      <th>Categoria</th>";
+    $htmlTable .= "    </tr>";
+    $htmlTable .= "  </thead>";
+    $htmlTable .= "  <tbody>";
+
+    $vSql  = " SELECT lan_id ";
+    $vSql .= "        , lan_despesa ";
+    $vSql .= "        , CASE
+                          WHEN lan_tipo = 'D' THEN \"Despesa\"
+                          WHEN lan_tipo = 'R' THEN \"Receita\"
+                          WHEN lan_tipo = 'T' THEN \"Transferência\"
+                          ELSE \"**\"
+                      END AS tipo ";
+    $vSql .= "        , lan_parcela ";
+    $vSql .= "        , lan_vencimento ";
+    $vSql .= "        , lan_valor ";
+    $vSql .= "        , bdp_descricao ";
+    $vSql .= " FROM tb_lancamento ";
+    $vSql .= " LEFT JOIN tb_base_despesa ON bdp_id = lan_categoria ";
+    $vSql .= " LEFT JOIN tb_conta ON con_id = lan_conta ";
+    $vSql .= " WHERE 1=1 ";
+    $vSql .= " AND lan_id IN (" . implode(",", $arrLanId) . ")";
+    $vSql .= " ORDER BY lan_vencimento, lan_id ";
+
+    $query = $this->db->query($vSql);
+    $arrRs = $query->result_array();
+
+    if(count($arrRs) <= 0){
+    } else {
+      $total = 0;
+      foreach($arrRs as $rs1){
+        $total += $rs1["lan_valor"];
+
+        $lanId      = $rs1["lan_id"];
+        $lanDespesa = $rs1["lan_despesa"];
+        $tipo       = $rs1["tipo"];
+        $parcNr     = $rs1["lan_parcela"];
+        $lanVcto    = (strlen($rs1["lan_vencimento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_vencimento"])): "";
+        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "R$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
+        $despesa    = $rs1["bdp_descricao"];
+
+        $htmlTable .= "<tr>";
+        $htmlTable .= "  <td><span style=''>$lanId</span></td>";
+        $htmlTable .= "  <td><span style=''>$lanDespesa</span></td>";
+        $htmlTable .= "  <td>$tipo</td>";
+        $htmlTable .= "  <td>$parcNr</td>";
+        $htmlTable .= "  <td>$lanVcto</td>";
+        $htmlTable .= "  <td>$lanValor</td>";
+        $htmlTable .= "  <td>$despesa</td>";
+        $htmlTable .= "</tr>";
+      }
+    }
+
+    $htmlTable .= "<tr>";
+    $htmlTable .= "  <td colspan='5' align='right'><b>TOTAL</b></td>";
+    $htmlTable .= "  <td colspan='2'>"."R$ " . number_format($total, 2, ",", ".")."</td>";
+    $htmlTable .= "</tr>";
+
+    $htmlTable .= "  </tbody>";
+    $htmlTable .= "</table>";
 
     return $htmlTable;
   }

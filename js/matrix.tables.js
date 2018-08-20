@@ -7,7 +7,7 @@ $(document).ready(function(){
 		"sDom": '<""l>t<"F"fp>'
 	});
 
-	$('input[type=checkbox],input[type=radio],input[type=file]').uniform();
+	// $('input[type=checkbox],input[type=radio],input[type=file]').uniform();
 
 	// $('select').select2();
 

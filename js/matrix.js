@@ -370,6 +370,44 @@ $(document).on('click', '#btnGerenciarPrevisao', function(){
     }
   });
 });
+
+$(document).on('click', '#btnBaixaLctoGrupo', function(){
+  var arrayLanIds = [];
+  $("#dvHtmlLancamentos input:[type=checkbox]:checked").each(function(){
+      arrayLanIds.push($(this).val());
+  });
+
+  var strLanIds = arrayLanIds.join(',');
+  $.ajax({
+    type: "POST",
+    url: HOME_URL + 'Lancamentos/jsonHtmlBaixaLctoGrupo',
+    data: 'strLanIds=' + strLanIds,
+    dataType: 'json',
+    success: function (ret) {
+      var html = ret.html;
+      openBootbox(html, false, function(){
+        setTimeout("loadObjects();", 350);
+      }, function(){
+        var variaveis = $('#frmJsonPostBaixaGrupo').serialize();
+        var retJson   = mvc_post_json_ajax_var('Lancamentos', 'jsonPostBaixaLctoGrupo', variaveis);
+
+        if(retJson.erro){
+          $.gritter.add({
+  					title: 'Alerta',
+  					text: retJson.msg,
+  				});
+          var maxZindex = getHighIndex();
+          $("#gritter-notice-wrapper").css({'z-index':maxZindex + 5});
+
+          return false;
+        } else {
+          $("#btnFiltrarLancamentos").click();
+          setTimeout("loadObjects(); calcTotaisGerenciarPrevisao();", 750);
+        }
+      });
+    }
+  });
+});
 // ===========
 
 function loadObjects(){
@@ -566,6 +604,7 @@ $(document).ready(function(){
 		$('#lightbox').hide(200);
 	});
 
+  $("input[type=checkbox]").css({'opacity':'1'});
 });
 
 // bootbox
