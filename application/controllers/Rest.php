@@ -64,7 +64,6 @@ class Rest extends CI_Controller {
   }
   // ===============
 
-  // con_id, con_nome, con_sigla, con_data_saldo, con_saldo_inicial, con_ativo
   // tb_conta ======
   public function getConta($id){
     $this->load->model('Tb_Conta');
@@ -122,6 +121,91 @@ class Rest extends CI_Controller {
   public function deleteConta($id){
     $this->load->model('Tb_Conta');
     $ret = $this->Tb_Conta->restDeleteConta($id);
+
+    echo json_encode($ret);
+  }
+  // ===============
+
+  // tb_lancamento =
+  public function getLancamento($id){
+    $this->load->model('Tb_Lancamento');
+    $ret = $this->Tb_Lancamento->restGetLancamento($id);
+
+    echo json_encode($ret);
+  }
+
+  public function addLancamento(){
+    extract($_POST);
+
+    $despesa      = $despesa ?? null;
+    $tipo         = $tipo ?? null;
+    $parcela      = $parcela ?? null;
+    $vencimento   = $vencimento ?? null;
+    $valor        = $valor ?? null;
+    $categoria    = $categoria ?? null;
+    $pagamento    = $pagamento ?? null;
+    $valor_pago   = $valor_pago ?? null;
+    $conta        = $conta ?? null;
+    $observacao   = $observacao ?? null;
+    $confirmado   = $confirmado ?? 0;
+    $repete_meses = $repeteMeses ?? null;
+
+    $Lancamento = [];
+    $Lancamento["lan_despesa"]    = $despesa;
+    $Lancamento["lan_tipo"]       = $tipo;
+    $Lancamento["lan_parcela"]    = $parcela;
+    $Lancamento["lan_vencimento"] = $vencimento;
+    $Lancamento["lan_valor"]      = $valor;
+    $Lancamento["lan_categoria"]  = $categoria;
+    $Lancamento["lan_pagamento"]  = $pagamento;
+    $Lancamento["lan_valor_pago"] = $valor_pago;
+    $Lancamento["lan_conta"]      = $conta;
+    $Lancamento["lan_observacao"] = $observacao;
+    $Lancamento["lan_confirmado"] = $confirmado;
+
+    $this->load->model('Tb_Lancamento');
+    $ret = $this->Tb_Lancamento->restAddLancamento($Lancamento, $repete_meses);
+
+    echo json_encode($ret);
+  }
+
+  public function editLancamento(){
+    extract($_POST);
+
+    $id           = $id ?? null;
+    $despesa      = $despesa ?? null;
+    $tipo         = $tipo ?? null;
+    $vencimento   = $vencimento ?? null;
+    $valor        = $valor ?? null;
+    $categoria    = $categoria ?? null;
+    $pagamento    = $pagamento ?? null;
+    $valor_pago   = $valor_pago ?? null;
+    $conta        = $conta ?? null;
+    $observacao   = $observacao ?? null;
+    $confirmado   = $confirmado ?? 0;
+
+    $Lancamento = [];
+    $Lancamento["lan_id"]         = $id;
+    $Lancamento["lan_despesa"]    = $despesa;
+    $Lancamento["lan_tipo"]       = $tipo;
+    $Lancamento["lan_vencimento"] = $vencimento;
+    $Lancamento["lan_valor"]      = $valor;
+    $Lancamento["lan_categoria"]  = $categoria;
+    $Lancamento["lan_pagamento"]  = $pagamento;
+    $Lancamento["lan_valor_pago"] = $valor_pago;
+    $Lancamento["lan_conta"]      = $conta;
+    $Lancamento["lan_observacao"] = $observacao;
+    $Lancamento["lan_confirmado"] = $confirmado;
+
+    $this->load->model('Tb_Lancamento');
+    $ret = $this->Tb_Lancamento->restEditLancamento($Lancamento);
+
+    echo json_encode($ret);
+  }
+
+  public function deleteLancamento($id){
+    $this->load->model('Tb_Lancamento');
+    $ret = $this->Tb_Lancamento->restDeleteLancamento($id);
 
     echo json_encode($ret);
   }

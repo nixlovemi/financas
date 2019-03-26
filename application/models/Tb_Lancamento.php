@@ -945,4 +945,24 @@ class Tb_Lancamento extends CI_Model {
     $arrRet["msg"]  = "";
     return $arrRet;
   }
+
+  public function restGetLancamento($lanId){
+    $retLancamento = $this->getLancamento($lanId);
+    return $retLancamento;
+  }
+
+  public function restAddLancamento($arrLancamentoDados, $repeteMeses=null){
+    $retLancamento = $this->insert($arrLancamentoDados, $repeteMeses);
+    return $retLancamento;
+  }
+
+  public function restEditLancamento($arrLancamentoDados){
+    $retLancamento = $this->edit($arrLancamentoDados);
+    return $retLancamento;
+  }
+
+  public function restDeleteLancamento($lanId){
+    $retLancamento = $this->delete($lanId);
+    return $retLancamento;
+  }
 }
