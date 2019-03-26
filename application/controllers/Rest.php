@@ -63,4 +63,67 @@ class Rest extends CI_Controller {
     echo json_encode($ret);
   }
   // ===============
+
+  // con_id, con_nome, con_sigla, con_data_saldo, con_saldo_inicial, con_ativo
+  // tb_conta ======
+  public function getConta($id){
+    $this->load->model('Tb_Conta');
+    $ret = $this->Tb_Conta->restGetConta($id);
+
+    echo json_encode($ret);
+  }
+
+  public function addConta(){
+    extract($_POST);
+
+    $nome          = $nome ?? "";
+    $sigla         = $sigla ?? "";
+    $data_saldo    = $data_saldo ?? "";
+    $saldo_inicial = $saldo_inicial ?? 0;
+    $ativo         = $ativo ?? 1;
+
+    $Conta = [];
+    $Conta["con_nome"]          = $nome;
+    $Conta["con_sigla"]         = $sigla;
+    $Conta["con_data_saldo"]    = $data_saldo;
+    $Conta["con_saldo_inicial"] = $saldo_inicial;
+    $Conta["con_ativo"]         = $ativo;
+
+    $this->load->model('Tb_Conta');
+    $ret = $this->Tb_Conta->restAddConta($Conta);
+
+    echo json_encode($ret);
+  }
+
+  public function editConta(){
+    extract($_POST);
+
+    $id            = $id ?? "";
+    $nome          = $nome ?? "";
+    $sigla         = $sigla ?? "";
+    $data_saldo    = $data_saldo ?? "";
+    $saldo_inicial = $saldo_inicial ?? 0;
+    $ativo         = $ativo ?? 1;
+
+    $Conta = [];
+    $Conta["con_id"]            = $id;
+    $Conta["con_nome"]          = $nome;
+    $Conta["con_sigla"]         = $sigla;
+    $Conta["con_data_saldo"]    = $data_saldo;
+    $Conta["con_saldo_inicial"] = $saldo_inicial;
+    $Conta["con_ativo"]         = $ativo;
+
+    $this->load->model('Tb_Conta');
+    $ret = $this->Tb_Conta->restEditConta($Conta);
+
+    echo json_encode($ret);
+  }
+
+  public function deleteConta($id){
+    $this->load->model('Tb_Conta');
+    $ret = $this->Tb_Conta->restDeleteConta($id);
+
+    echo json_encode($ret);
+  }
+  // ===============
 }

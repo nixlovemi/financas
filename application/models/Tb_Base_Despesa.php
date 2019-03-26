@@ -265,7 +265,6 @@ class Tb_Base_Despesa extends CI_Model {
     $this->load->database();
     $this->db->select("bdp_id, bdp_descricao, bdp_tipo, bdp_contabiliza, bdp_ativo");
     $this->db->from("tb_base_despesa");
-    $this->db->where("bdp_ativo", 1);
     $this->db->where("bdp_id", $id);
 
     $query = $this->db->get();

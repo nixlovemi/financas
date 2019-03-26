@@ -130,6 +130,247 @@ class Tb_Conta extends CI_Model {
     return $arrRet;
   }
 
+  private function validaInsert($arrConta){
+    $this->load->helper('utils');
+
+    $arrRet         = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "";
+
+    $strNome = $arrConta["con_nome"] ?? "";
+    if(strlen($strNome) < 2){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe um nome de pelo menos 2 caracteres!";
+
+      return $arrRet;
+    }
+
+    $strSigla = $arrConta["con_sigla"] ?? "";
+    if(strlen($strSigla) < 2){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe uma sigla de pelo menos 2 caracteres!";
+
+      return $arrRet;
+    }
+
+    $vDtSaldo = (isset($arrConta["con_data_saldo"])) ? $arrConta["con_data_saldo"]: "";
+    $isDtSaldoValid = isValidDate($vDtSaldo, "Y-m-d");
+    if(!$isDtSaldoValid){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe uma data de saldo válida";
+
+      return $arrRet;
+    }
+
+    $vSaldoIni = (isset($arrConta["con_saldo_inicial"])) ? (float)$arrConta["con_saldo_inicial"]: "";
+    if(!is_numeric($vSaldoIni)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe um saldo inicial válido!";
+
+      return $arrRet;
+    }
+
+    $strAtivo = $arrConta["con_ativo"] ?? "";
+    if($strAtivo != "0" && $strAtivo != "1"){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe uma informação de ativo válida! Opções: 0, 1.";
+
+      return $arrRet;
+    }
+
+    $arrRet["erro"] = false;
+    $arrRet["msg"]  = "";
+    return $arrRet;
+  }
+
+  public function insert($arrConta){
+    $arrRet                = [];
+    $arrRet["erro"]        = true;
+    $arrRet["msg"]         = "";
+    $arrRet["Conta"] = "";
+
+    $retValidacao = $this->validaInsert($arrConta);
+    if($retValidacao["erro"]){
+      return $retValidacao;
+    }
+
+    $this->load->database();
+    $this->load->helpers("utils");
+
+    $vNome     = isset($arrConta["con_nome"]) ? $arrConta["con_nome"]: "";
+    $vSigla    = isset($arrConta["con_sigla"]) ? $arrConta["con_sigla"]: "";
+    $vDtSaldo  = isset($arrConta["con_data_saldo"]) ? $arrConta["con_data_saldo"]: "";
+    $vSaldoIni = isset($arrConta["con_saldo_inicial"]) ? $arrConta["con_saldo_inicial"]: 0;
+    $vAtivo    = isset($arrConta["con_ativo"]) ? $arrConta["con_ativo"]: 1;
+
+    $data = array(
+      'con_nome'          => $vNome,
+      'con_sigla'         => $vSigla,
+      'con_data_saldo'    => $vDtSaldo,
+      'con_saldo_inicial' => $vSaldoIni,
+      'con_ativo'         => $vAtivo,
+    );
+
+    $this->db->trans_start();
+    $this->db->insert('tb_conta', $data);
+    $conId = $this->db->insert_id();
+    $this->db->trans_complete();
+    $retInsert = $this->db->trans_status();
+
+    if(!$retInsert){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = $this->db->_error_message();
+    } else {
+      $retConta = $this->restGetConta($conId);
+
+      $arrRet["Conta"] = ($retConta["erro"] == true) ? array(): $retConta["Conta"];
+      $arrRet["erro"]  = false;
+      $arrRet["msg"]   = "Conta inserida com sucesso!";
+    }
+
+    return $arrRet;
+  }
+
+  private function validaEdit($arrConta){
+    $this->load->helper('utils');
+
+    $arrRet         = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "";
+
+    $strId = $arrConta["con_id"] ?? "";
+    if(!is_numeric($strId)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe um ID válido para edição!";
+
+      return $arrRet;
+    }
+
+    $strNome = $arrConta["con_nome"] ?? "";
+    if(strlen($strNome) < 2){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe um nome de pelo menos 2 caracteres!";
+
+      return $arrRet;
+    }
+
+    $strSigla = $arrConta["con_sigla"] ?? "";
+    if(strlen($strSigla) < 2){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe uma sigla de pelo menos 2 caracteres!";
+
+      return $arrRet;
+    }
+
+    $vDtSaldo = (isset($arrConta["con_data_saldo"])) ? $arrConta["con_data_saldo"]: "";
+    $isDtSaldoValid = isValidDate($vDtSaldo, "Y-m-d");
+    if(!$isDtSaldoValid){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe uma data de saldo válida";
+
+      return $arrRet;
+    }
+
+    $vSaldoIni = (isset($arrConta["con_saldo_inicial"])) ? (float)$arrConta["con_saldo_inicial"]: "";
+    if(!is_numeric($vSaldoIni)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe um saldo inicial válido!";
+
+      return $arrRet;
+    }
+
+    $strAtivo = $arrConta["con_ativo"] ?? "";
+    if($strAtivo != "0" && $strAtivo != "1"){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Informe uma informação de ativo válida! Opções: 0, 1.";
+
+      return $arrRet;
+    }
+
+    $arrRet["erro"] = false;
+    $arrRet["msg"]  = "";
+    return $arrRet;
+  }
+
+  public function edit($arrConta){
+    $arrRet          = [];
+    $arrRet["erro"]  = true;
+    $arrRet["msg"]   = "";
+    $arrRet["Conta"] = "";
+
+    $retValidacao = $this->validaEdit($arrConta);
+    if($retValidacao["erro"]){
+      return $retValidacao;
+    }
+
+    $this->load->database();
+    $this->load->helpers("utils");
+
+    $vId       = isset($arrConta["con_id"]) ? $arrConta["con_id"]: "";
+    $vNome     = isset($arrConta["con_nome"]) ? $arrConta["con_nome"]: "";
+    $vSigla    = isset($arrConta["con_sigla"]) ? $arrConta["con_sigla"]: "";
+    $vDtSaldo  = isset($arrConta["con_data_saldo"]) ? $arrConta["con_data_saldo"]: "";
+    $vSaldoIni = isset($arrConta["con_saldo_inicial"]) ? $arrConta["con_saldo_inicial"]: 0;
+    $vAtivo    = isset($arrConta["con_ativo"]) ? $arrConta["con_ativo"]: 1;
+
+    $data = array(
+      'con_nome'          => $vNome,
+      'con_sigla'         => $vSigla,
+      'con_data_saldo'    => $vDtSaldo,
+      'con_saldo_inicial' => $vSaldoIni,
+      'con_ativo'         => $vAtivo,
+    );
+
+    $this->db->trans_start();
+    $this->db->where('con_id', $vId);
+    $retInsert = $this->db->update('tb_conta', $data);
+    $this->db->trans_complete();
+    $retEdit = $this->db->trans_status();
+
+    if(!$retEdit){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = $this->db->_error_message();
+    } else {
+      $retConta = $this->restGetConta($vId);
+
+      $arrRet["Conta"] = ($retConta["erro"] == true) ? array(): $retConta["Conta"];
+      $arrRet["erro"]  = false;
+      $arrRet["msg"]   = "Conta editada com sucesso!";
+    }
+
+    return $arrRet;
+  }
+
+  public function delete($id){
+    $arrRet = [];
+    $arrRet["erro"] = true;
+    $arrRet["msg"]  = "";
+
+    if(!is_numeric($id)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "ID inválido para deletar Conta";
+
+      return $arrRet;
+    }
+
+    $this->load->database();
+    $this->db->trans_start();
+    $this->db->where('con_id', $id);
+    $this->db->delete('tb_conta');
+    $this->db->trans_complete();
+    $retDelete = $this->db->trans_status();
+
+    if(!$retDelete){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = $this->db->_error_message();
+    } else {
+      $arrRet["erro"] = false;
+      $arrRet["msg"]  = "Conta deletada com sucesso!";
+    }
+
+    return $arrRet;
+  }
+
   public function getHtmlSaldoContas($mes, $ano){
     $html        = "";
     $mes         = str_pad($mes, 2, "0", STR_PAD_LEFT);
@@ -221,5 +462,66 @@ class Tb_Conta extends CI_Model {
     }
 
     return $html;
+  }
+
+  public function restGetConta($id){
+    $arrRet = [];
+    $arrRet["erro"]  = true;
+    $arrRet["msg"]   = "";
+    $arrRet["Conta"] = array();
+
+    if(!is_numeric($id)){
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "ID inválido para buscar Conta";
+
+      return $arrRet;
+    }
+
+    #SELECT  FROM tb_base_despesa
+    $this->load->database();
+    $this->db->select("con_id, con_nome, con_sigla, con_data_saldo, con_saldo_inicial, con_ativo");
+    $this->db->from("tb_conta");
+    $this->db->where("con_id", $id);
+
+    $query = $this->db->get();
+    $row   = $query->row();
+
+    if($query->num_rows() > 0 && isset($row)){
+      $Conta = [];
+      $Conta["id"]            = $row->con_id;
+      $Conta["nome"]          = $row->con_nome;
+      $Conta["sigla"]         = $row->con_sigla;
+      $Conta["data_saldo"]    = $row->con_data_saldo;
+      $Conta["saldo_inicial"] = $row->con_saldo_inicial;
+      $Conta["ativo"]         = $row->con_ativo;
+
+      $arrRet["erro"]  = false;
+      $arrRet["msg"]   = "Conta encontrada com sucesso!";
+      $arrRet["Conta"] = $Conta;
+
+      return $arrRet;
+    } else {
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Nenhuma Conta encontrada!";
+
+      return $arrRet;
+    }
+  }
+
+  public function restAddConta($Conta){
+    return $this->insert($Conta);
+  }
+
+  public function restEditConta($Conta){
+    return $this->edit($Conta);
+  }
+
+  public function restDeleteConta($id){
+    $retConta = $this->restGetConta($id);
+    $retDel   = $this->delete($id);
+
+    $retDel["Conta"] = ($retConta["erro"]) ? array(): $retConta["Conta"];
+
+    return $retDel;
   }
 }
