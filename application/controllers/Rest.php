@@ -70,6 +70,13 @@ class Rest extends CI_Controller {
 
     echo json_encode($ret);
   }
+
+  public function getBaseDespesas(){
+    $this->load->model('Tb_Base_Despesa');
+    $ret = $this->Tb_Base_Despesa->getBaseDespesas();
+
+    echo json_encode($ret);
+  }
   // ===============
 
   // tb_conta ======
@@ -131,6 +138,13 @@ class Rest extends CI_Controller {
     $ret = $this->Tb_Conta->restDeleteConta($id);
 
     echo json_encode($ret);
+  }
+
+  public function getContas(){
+    $this->load->model('Tb_Conta');
+    $arrRet = $this->Tb_Conta->getContas();
+
+    echo json_encode($arrRet);
   }
   // ===============
 
@@ -216,6 +230,46 @@ class Rest extends CI_Controller {
     $ret = $this->Tb_Lancamento->restDeleteLancamento($id);
 
     echo json_encode($ret);
+  }
+
+  public function getLancamentos(){
+    $arrFilters = [];
+    $arrFilters["mesBase"]     = "05";
+    $arrFilters["anoBase"]     = "2019";
+    $arrFilters["vctoIni"]     = "";
+    $arrFilters["vctoFim"]     = "";
+    $arrFilters["pgtoIni"]     = "";
+    $arrFilters["pgtoFim"]     = "";
+    $arrFilters["descricao"]   = "";
+    $arrFilters["conta"]       = "";
+    $arrFilters["tipo"]        = "";
+    $arrFilters["categoria"]   = "";
+    $arrFilters["apenasPagas"] = "";
+    $arrFilters["limit"]       = 50;
+    $arrFilters["offset"]      = 0;
+
+    $this->load->model('Tb_Lancamento');
+    $ret = $this->Tb_Lancamento->getHtmlLancamentos($arrFilters, true, true);
+
+    echo json_encode($ret);
+  }
+  // ===============
+
+  // tb_usuario ====
+  public function checkLogin(){
+    $postdata = file_get_contents("php://input");
+    $request  = json_decode($postdata);
+
+    $usuario  = $request->user ?? "";
+    $senha    = $request->password ?? "";
+
+    $this->load->model('Tb_Usuario');
+    $arrInfo             = [];
+    $arrInfo["user"]     = $usuario;
+    $arrInfo["password"] = $senha;
+    $arrRet              = $this->Tb_Usuario->checkLogin($arrInfo);
+
+    echo json_encode($arrRet);
   }
   // ===============
 }

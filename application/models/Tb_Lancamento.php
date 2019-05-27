@@ -1,6 +1,6 @@
 <?php
 class Tb_Lancamento extends CI_Model {
-  public function getHtmlLancamentos($arrFilters=array(), $edit=true){
+  public function getHtmlLancamentos($arrFilters=array(), $edit=true, $returnJson=false){
     // filtros
     $vMesBase   = isset($arrFilters["mesBase"]) ? $arrFilters["mesBase"]: (int) date("m");
     $vAnoBase   = isset($arrFilters["anoBase"]) ? $arrFilters["anoBase"]: (int) date("Y");
@@ -14,6 +14,9 @@ class Tb_Lancamento extends CI_Model {
     $vTipo      = isset($arrFilters["tipo"]) ? $arrFilters["tipo"]: "";
     $vCategoria = isset($arrFilters["categoria"]) ? $arrFilters["categoria"]: "";
     $vPagas     = isset($arrFilters["apenasPagas"]) ? $arrFilters["apenasPagas"]: "";
+
+    $vLimit     = isset($arrFilters["limit"]) ? $arrFilters["limit"]: "";
+    $vOffset    = isset($arrFilters["offset"]) ? $arrFilters["offset"]: "";
     // =======
 
     // sql filter
@@ -74,6 +77,11 @@ class Tb_Lancamento extends CI_Model {
     }
     // ==========
 
+    $arrJsonRet           = [];
+    $arrJsonRet["rows"]   = [];
+    $arrJsonRet["limit"]  = $vLimit;
+    $arrJsonRet["offset"] = $vOffset;
+
     $this->load->database();
     $htmlTable  = "";
     $htmlTable .= "<div style='display:block; margin:8px 0 15px 4px'>";
@@ -124,6 +132,12 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= " WHERE 1=1 ";
     $vSql .= " $sqlFilter ";
     $vSql .= " ORDER BY lan_vencimento, lan_id ";
+    if($vLimit <> '' && is_numeric($vLimit)){
+      $vSql .= " LIMIT $vLimit ";
+    }
+    if($vOffset <> '' && is_numeric($vOffset)){
+      $vSql .= " OFFSET $vOffset ";
+    }
 
     $query = $this->db->query($vSql);
     $arrRs = $query->result_array();
@@ -184,6 +198,21 @@ class Tb_Lancamento extends CI_Model {
           $htmlTable .= "<td><a href='javascript:;' class='TbLancamento_ajax_deletar' data-id='$lanId'><i class='icon-trash icon-lista'></i></a></td>";
         }
         $htmlTable .= "</tr>";
+
+        $arrJsonRet["rows"][] = array(
+          "lanId"       => $lanId,
+          "lanDespesa"  => $lanDespesa,
+          "tipo"        => $tipo,
+          "parcNr"      => $parcNr,
+          "lanVcto"     => $lanVcto,
+          "lanValor"    => $lanValor,
+          "despesa"     => $despesa,
+          "lanPgto"     => $lanPgto,
+          "lanVlrPg"    => $lanVlrPg,
+          "conta"       => $conta,
+          "cssColor"    => $cssColor,
+          "contabiliza" => $rs1["bdp_contabiliza"],
+        );
       }
     }
 
@@ -252,7 +281,11 @@ class Tb_Lancamento extends CI_Model {
     $htmlTable .= "  </div>";
     $htmlTable .= "</div>";
 
-    return $htmlTable;
+    if($returnJson == true){
+      return $arrJsonRet;
+    } else {
+      return $htmlTable;
+    }
   }
 
   public function getHtmlBaixaGrupo($arrLanId){
