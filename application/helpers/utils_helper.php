@@ -1,5 +1,29 @@
 <?php
 /**
+* valida e retorna as variaveis
+* $return->nome, por exemplo
+*/
+function proccessPost(){
+  $postdata = file_get_contents("php://input");
+  if($postdata != ""){
+    $jsonVars  = json_decode($postdata);
+  } else {
+    $jsonStr  = json_encode($_REQUEST);
+    $jsonVars = json_decode($jsonStr);
+  }
+  if(!isset($jsonVars->appkey) || $jsonVars->appkey != "9837f6f54e56b471aaa046192d488587"){
+    $arrRet         = [];
+    $arrRet["erro"] = true;
+    $arrRet["error"] = true;
+    $arrRet["msg"]  = "Key de acesso inválida!" ;
+    echo json_encode($arrRet);
+    die();
+  } else {
+    return $jsonVars;
+  }
+}
+
+/**
 * encoda uma string para passar como parametro
 */
 function base64url_encode($data)

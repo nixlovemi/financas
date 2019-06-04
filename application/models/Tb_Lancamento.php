@@ -200,18 +200,19 @@ class Tb_Lancamento extends CI_Model {
         $htmlTable .= "</tr>";
 
         $arrJsonRet["rows"][] = array(
-          "lanId"       => $lanId,
-          "lanDespesa"  => $lanDespesa,
-          "tipo"        => $tipo,
-          "parcNr"      => $parcNr,
-          "lanVcto"     => $lanVcto,
-          "lanValor"    => $lanValor,
-          "despesa"     => $despesa,
-          "lanPgto"     => $lanPgto,
-          "lanVlrPg"    => $lanVlrPg,
-          "conta"       => $conta,
-          "cssColor"    => $cssColor,
-          "contabiliza" => $rs1["bdp_contabiliza"],
+          "lanId"         => $lanId,
+          "lanDespesa"    => $lanDespesa,
+          "tipo"          => $tipo,
+          "parcNr"        => $parcNr,
+          "lanVcto"       => $lanVcto,
+          "lanValor"      => $lanValor,
+          "despesa"       => $despesa,
+          "lanPgto"       => $lanPgto,
+          "lanVlrPg"      => $lanVlrPg,
+          "conta"         => $conta,
+          "cssColor"      => $cssColor,
+          "contabiliza"   => $rs1["bdp_contabiliza"],
+          "lanConfirmado" => $rs1["lan_confirmado"],
         );
       }
     }

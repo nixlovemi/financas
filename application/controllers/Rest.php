@@ -12,10 +12,15 @@ class Rest extends CI_Controller {
     if($method == "OPTIONS") {
       die();
     }
+
+    $this->load->helper("utils_helper");
   }
 
   // tb_base_despesa
-  public function getBaseDespesa($id){
+  public function getBaseDespesa(){
+    $request = proccessPost();
+    $id      = $request->id;
+
     $this->load->model('Tb_Base_Despesa');
     $ret = $this->Tb_Base_Despesa->restGetBaseDespesa($id);
 
@@ -23,12 +28,12 @@ class Rest extends CI_Controller {
   }
 
   public function addBaseDespesa(){
-    extract($_POST);
+    $request = proccessPost();
 
-    $descricao   = $descricao ?? "";
-    $tipo        = $tipo ?? "";
-    $contabiliza = $contabiliza ?? 1;
-    $ativo       = $ativo ?? 1;
+    $descricao   = $request->$descricao ?? "";
+    $tipo        = $request->$tipo ?? "";
+    $contabiliza = $request->$contabiliza ?? 1;
+    $ativo       = $request->$ativo ?? 1;
 
     $BaseDespesa = [];
     $BaseDespesa["bdp_descricao"]   = $descricao;
@@ -43,13 +48,13 @@ class Rest extends CI_Controller {
   }
 
   public function editBaseDespesa(){
-    extract($_POST);
+    $request = proccessPost();
 
-    $id          = $id ?? "";
-    $descricao   = $descricao ?? "";
-    $tipo        = $tipo ?? "";
-    $contabiliza = $contabiliza ?? 1;
-    $ativo       = $ativo ?? 1;
+    $id          = $request->$id ?? "";
+    $descricao   = $request->$descricao ?? "";
+    $tipo        = $request->$tipo ?? "";
+    $contabiliza = $request->$contabiliza ?? 1;
+    $ativo       = $request->$ativo ?? 1;
 
     $BaseDespesa = [];
     $BaseDespesa["bdp_id"]          = $id;
@@ -64,7 +69,10 @@ class Rest extends CI_Controller {
     echo json_encode($ret);
   }
 
-  public function deleteBaseDespesa($id){
+  public function deleteBaseDespesa(){
+    $request = proccessPost();
+    $id      = $request->id;
+
     $this->load->model('Tb_Base_Despesa');
     $ret = $this->Tb_Base_Despesa->restDeleteBaseDespesa($id);
 
@@ -72,6 +80,8 @@ class Rest extends CI_Controller {
   }
 
   public function getBaseDespesas(){
+    $request = proccessPost();
+
     $this->load->model('Tb_Base_Despesa');
     $ret = $this->Tb_Base_Despesa->getBaseDespesas();
 
@@ -80,7 +90,10 @@ class Rest extends CI_Controller {
   // ===============
 
   // tb_conta ======
-  public function getConta($id){
+  public function getConta(){
+    $request = proccessPost();
+    $id      = $request->id;
+
     $this->load->model('Tb_Conta');
     $ret = $this->Tb_Conta->restGetConta($id);
 
@@ -88,13 +101,13 @@ class Rest extends CI_Controller {
   }
 
   public function addConta(){
-    extract($_POST);
+    $request = proccessPost();
 
-    $nome          = $nome ?? "";
-    $sigla         = $sigla ?? "";
-    $data_saldo    = $data_saldo ?? "";
-    $saldo_inicial = $saldo_inicial ?? 0;
-    $ativo         = $ativo ?? 1;
+    $nome          = $request->$nome ?? "";
+    $sigla         = $request->$sigla ?? "";
+    $data_saldo    = $request->$data_saldo ?? "";
+    $saldo_inicial = $request->$saldo_inicial ?? 0;
+    $ativo         = $request->$ativo ?? 1;
 
     $Conta = [];
     $Conta["con_nome"]          = $nome;
@@ -110,14 +123,14 @@ class Rest extends CI_Controller {
   }
 
   public function editConta(){
-    extract($_POST);
+    $request = proccessPost();
 
-    $id            = $id ?? "";
-    $nome          = $nome ?? "";
-    $sigla         = $sigla ?? "";
-    $data_saldo    = $data_saldo ?? "";
-    $saldo_inicial = $saldo_inicial ?? 0;
-    $ativo         = $ativo ?? 1;
+    $id            = $request->$id ?? "";
+    $nome          = $request->$nome ?? "";
+    $sigla         = $request->$sigla ?? "";
+    $data_saldo    = $request->$data_saldo ?? "";
+    $saldo_inicial = $request->$saldo_inicial ?? 0;
+    $ativo         = $request->$ativo ?? 1;
 
     $Conta = [];
     $Conta["con_id"]            = $id;
@@ -133,7 +146,10 @@ class Rest extends CI_Controller {
     echo json_encode($ret);
   }
 
-  public function deleteConta($id){
+  public function deleteConta(){
+    $request = proccessPost();
+    $id      = $request->id;
+
     $this->load->model('Tb_Conta');
     $ret = $this->Tb_Conta->restDeleteConta($id);
 
@@ -141,6 +157,8 @@ class Rest extends CI_Controller {
   }
 
   public function getContas(){
+    $request = proccessPost();
+
     $this->load->model('Tb_Conta');
     $arrRet = $this->Tb_Conta->getContas();
 
@@ -149,7 +167,10 @@ class Rest extends CI_Controller {
   // ===============
 
   // tb_lancamento =
-  public function getLancamento($id){
+  public function getLancamento(){
+    $request = proccessPost();
+    $id      = $request->id;
+
     $this->load->model('Tb_Lancamento');
     $ret = $this->Tb_Lancamento->restGetLancamento($id);
 
@@ -157,20 +178,20 @@ class Rest extends CI_Controller {
   }
 
   public function addLancamento(){
-    extract($_POST);
+    $request = proccessPost();
 
-    $despesa      = $despesa ?? null;
-    $tipo         = $tipo ?? null;
-    $parcela      = $parcela ?? null;
-    $vencimento   = $vencimento ?? null;
-    $valor        = $valor ?? null;
-    $categoria    = $categoria ?? null;
-    $pagamento    = $pagamento ?? null;
-    $valor_pago   = $valor_pago ?? null;
-    $conta        = $conta ?? null;
-    $observacao   = $observacao ?? null;
-    $confirmado   = $confirmado ?? 0;
-    $repete_meses = $repeteMeses ?? null;
+    $despesa      = $request->$despesa ?? null;
+    $tipo         = $request->$tipo ?? null;
+    $parcela      = $request->$parcela ?? null;
+    $vencimento   = $request->$vencimento ?? null;
+    $valor        = $request->$valor ?? null;
+    $categoria    = $request->$categoria ?? null;
+    $pagamento    = $request->$pagamento ?? null;
+    $valor_pago   = $request->$valor_pago ?? null;
+    $conta        = $request->$conta ?? null;
+    $observacao   = $request->$observacao ?? null;
+    $confirmado   = $request->$confirmado ?? 0;
+    $repete_meses = $request->$repeteMeses ?? null;
 
     $Lancamento = [];
     $Lancamento["lan_despesa"]    = $despesa;
@@ -192,19 +213,19 @@ class Rest extends CI_Controller {
   }
 
   public function editLancamento(){
-    extract($_POST);
+    $request = proccessPost();
 
-    $id           = $id ?? null;
-    $despesa      = $despesa ?? null;
-    $tipo         = $tipo ?? null;
-    $vencimento   = $vencimento ?? null;
-    $valor        = $valor ?? null;
-    $categoria    = $categoria ?? null;
-    $pagamento    = $pagamento ?? null;
-    $valor_pago   = $valor_pago ?? null;
-    $conta        = $conta ?? null;
-    $observacao   = $observacao ?? null;
-    $confirmado   = $confirmado ?? 0;
+    $id           = $request->$id ?? null;
+    $despesa      = $request->$despesa ?? null;
+    $tipo         = $request->$tipo ?? null;
+    $vencimento   = $request->$vencimento ?? null;
+    $valor        = $request->$valor ?? null;
+    $categoria    = $request->$categoria ?? null;
+    $pagamento    = $request->$pagamento ?? null;
+    $valor_pago   = $request->$valor_pago ?? null;
+    $conta        = $request->$conta ?? null;
+    $observacao   = $request->$observacao ?? null;
+    $confirmado   = $request->$confirmado ?? 0;
 
     $Lancamento = [];
     $Lancamento["lan_id"]         = $id;
@@ -225,7 +246,10 @@ class Rest extends CI_Controller {
     echo json_encode($ret);
   }
 
-  public function deleteLancamento($id){
+  public function deleteLancamento(){
+    $request = proccessPost();
+    $id      = $request->id;
+
     $this->load->model('Tb_Lancamento');
     $ret = $this->Tb_Lancamento->restDeleteLancamento($id);
 
@@ -233,20 +257,22 @@ class Rest extends CI_Controller {
   }
 
   public function getLancamentos(){
+    $request = proccessPost();
+
     $arrFilters = [];
-    $arrFilters["mesBase"]     = "05";
-    $arrFilters["anoBase"]     = "2019";
-    $arrFilters["vctoIni"]     = "";
-    $arrFilters["vctoFim"]     = "";
-    $arrFilters["pgtoIni"]     = "";
-    $arrFilters["pgtoFim"]     = "";
-    $arrFilters["descricao"]   = "";
-    $arrFilters["conta"]       = "";
-    $arrFilters["tipo"]        = "";
-    $arrFilters["categoria"]   = "";
-    $arrFilters["apenasPagas"] = "";
-    $arrFilters["limit"]       = 50;
-    $arrFilters["offset"]      = 0;
+    $arrFilters["mesBase"]     = $request->mesBase ?? "";
+    $arrFilters["anoBase"]     = $request->anoBase ?? "";
+    $arrFilters["vctoIni"]     = $request->vctoIni ?? "";
+    $arrFilters["vctoFim"]     = $request->vctoFim ?? "";
+    $arrFilters["pgtoIni"]     = $request->pgtoIni ?? "";
+    $arrFilters["pgtoFim"]     = $request->pgtoFim ?? "";
+    $arrFilters["descricao"]   = $request->descricao ?? "";
+    $arrFilters["conta"]       = $request->conta ?? "";
+    $arrFilters["tipo"]        = $request->tipo ?? "";
+    $arrFilters["categoria"]   = $request->categoria ?? "";
+    $arrFilters["apenasPagas"] = $request->apenasPagas ?? "";
+    $arrFilters["limit"]       = $request->limit ?? "";
+    $arrFilters["offset"]      = $request->offset ?? "";
 
     $this->load->model('Tb_Lancamento');
     $ret = $this->Tb_Lancamento->getHtmlLancamentos($arrFilters, true, true);
@@ -257,8 +283,7 @@ class Rest extends CI_Controller {
 
   // tb_usuario ====
   public function checkLogin(){
-    $postdata = file_get_contents("php://input");
-    $request  = json_decode($postdata);
+    $request  = proccessPost();
 
     $usuario  = $request->user ?? "";
     $senha    = $request->password ?? "";
