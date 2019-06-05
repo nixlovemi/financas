@@ -279,6 +279,17 @@ class Rest extends CI_Controller {
 
     echo json_encode($ret);
   }
+
+  public function getCategoriaGastos(){
+    $request = proccessPost();
+    $mes     = $request->mes;
+    $ano     = $request->ano;
+
+    $this->load->model('Tb_Lancamento');
+    $ret = $this->Tb_Lancamento->getArrCategoriaGastos($mes, $ano);
+
+    echo json_encode($ret);
+  }
   // ===============
 
   // tb_usuario ====

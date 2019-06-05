@@ -79,6 +79,7 @@ class Tb_Lancamento extends CI_Model {
 
     $arrJsonRet           = [];
     $arrJsonRet["rows"]   = [];
+    $arrJsonRet["totais"] = [];
     $arrJsonRet["limit"]  = $vLimit;
     $arrJsonRet["offset"] = $vOffset;
 
@@ -282,6 +283,15 @@ class Tb_Lancamento extends CI_Model {
     $htmlTable .= "  </div>";
     $htmlTable .= "</div>";
 
+    $arrJsonRet["totais"] = array(
+      "receita"               => number_format($totValorRec, 2, ".", ""),
+      "receitaPaga"           => number_format($totValorPgRec, 2, ".", ""),
+      "receitaNaoContabiliza" => number_format($totNaoContabRec, 2, ".", ""),
+      "despesa"               => number_format($totValorDesp, 2, ".", ""),
+      "despesaPaga"           => number_format($totValorPgDesp, 2, ".", ""),
+      "despesaNaoContabiliza" => number_format($totNaoContabDesp, 2, ".", ""),
+    );
+
     if($returnJson == true){
       return $arrJsonRet;
     } else {
@@ -383,7 +393,7 @@ class Tb_Lancamento extends CI_Model {
     foreach($arrGastos as $rs1){
       $previsto  = ($rs1["vlrPrevisto"] != "") ? $rs1["vlrPrevisto"]: 0;
       $realizado = ($rs1["vlrRealizado"] != "") ? $rs1["vlrRealizado"]: 0;
-      $cssRed    = ($realizado > $previsto) ? "color:red;": "";
+      $cssRed    = ($rs1["excedeuPrevisto"] == 1) ? "color:red;": "";
       $totPrevisto  += $previsto;
       $totRealizado += $realizado;
 
@@ -442,8 +452,8 @@ class Tb_Lancamento extends CI_Model {
       $idCategoria  = $rs1["id_categoria"];
       $categoria    = $rs1["categoria"];
       $tipo         = $rs1["tipo"];
-      $vlrPrevisto  = $rs1["previsto"];
-      $vlrRealizado = $rs1["realizado"];
+      $vlrPrevisto  = ($rs1["previsto"] != "") ? $rs1["previsto"]: 0;
+      $vlrRealizado = ($rs1["realizado"] != "") ? $rs1["realizado"]: 0;
 
       switch ($tipo) {
         case 'V':
@@ -462,11 +472,14 @@ class Tb_Lancamento extends CI_Model {
 
       if($nameArray != ""){
         $$nameArray[] = array(
-          "idCategoria"  => $idCategoria,
-          "categoria"    => $categoria,
-          "tipo"         => $tipo,
-          "vlrPrevisto"  => $vlrPrevisto,
-          "vlrRealizado" => $vlrRealizado,
+          "idCategoria"           => $idCategoria,
+          "categoria"             => $categoria,
+          "tipo"                  => $tipo,
+          "vlrPrevisto"           => $vlrPrevisto,
+          "vlrPrevistoFormatado"  => number_format($vlrPrevisto, 2, ",", "."),
+          "vlrRealizado"          => $vlrRealizado,
+          "vlrRealizadoFormatado" => number_format($vlrRealizado, 2, ",", "."),
+          "excedeuPrevisto"       => ($vlrRealizado > $vlrPrevisto),
         );
       }
     }
