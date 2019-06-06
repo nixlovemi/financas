@@ -30,10 +30,10 @@ class Rest extends CI_Controller {
   public function addBaseDespesa(){
     $request = proccessPost();
 
-    $descricao   = $request->$descricao ?? "";
-    $tipo        = $request->$tipo ?? "";
-    $contabiliza = $request->$contabiliza ?? 1;
-    $ativo       = $request->$ativo ?? 1;
+    $descricao   = $request->descricao ?? "";
+    $tipo        = $request->tipo ?? "";
+    $contabiliza = $request->contabiliza ?? 1;
+    $ativo       = $request->ativo ?? 1;
 
     $BaseDespesa = [];
     $BaseDespesa["bdp_descricao"]   = $descricao;
@@ -50,11 +50,11 @@ class Rest extends CI_Controller {
   public function editBaseDespesa(){
     $request = proccessPost();
 
-    $id          = $request->$id ?? "";
-    $descricao   = $request->$descricao ?? "";
-    $tipo        = $request->$tipo ?? "";
-    $contabiliza = $request->$contabiliza ?? 1;
-    $ativo       = $request->$ativo ?? 1;
+    $id          = $request->id ?? "";
+    $descricao   = $request->descricao ?? "";
+    $tipo        = $request->tipo ?? "";
+    $contabiliza = $request->contabiliza ?? 1;
+    $ativo       = $request->ativo ?? 1;
 
     $BaseDespesa = [];
     $BaseDespesa["bdp_id"]          = $id;
@@ -103,11 +103,11 @@ class Rest extends CI_Controller {
   public function addConta(){
     $request = proccessPost();
 
-    $nome          = $request->$nome ?? "";
-    $sigla         = $request->$sigla ?? "";
-    $data_saldo    = $request->$data_saldo ?? "";
-    $saldo_inicial = $request->$saldo_inicial ?? 0;
-    $ativo         = $request->$ativo ?? 1;
+    $nome          = $request->nome ?? "";
+    $sigla         = $request->sigla ?? "";
+    $data_saldo    = $request->data_saldo ?? "";
+    $saldo_inicial = $request->saldo_inicial ?? 0;
+    $ativo         = $request->ativo ?? 1;
 
     $Conta = [];
     $Conta["con_nome"]          = $nome;
@@ -125,12 +125,12 @@ class Rest extends CI_Controller {
   public function editConta(){
     $request = proccessPost();
 
-    $id            = $request->$id ?? "";
-    $nome          = $request->$nome ?? "";
-    $sigla         = $request->$sigla ?? "";
-    $data_saldo    = $request->$data_saldo ?? "";
-    $saldo_inicial = $request->$saldo_inicial ?? 0;
-    $ativo         = $request->$ativo ?? 1;
+    $id            = $request->id ?? "";
+    $nome          = $request->nome ?? "";
+    $sigla         = $request->sigla ?? "";
+    $data_saldo    = $request->data_saldo ?? "";
+    $saldo_inicial = $request->saldo_inicial ?? 0;
+    $ativo         = $request->ativo ?? 1;
 
     $Conta = [];
     $Conta["con_id"]            = $id;
@@ -180,18 +180,18 @@ class Rest extends CI_Controller {
   public function addLancamento(){
     $request = proccessPost();
 
-    $despesa      = $request->$despesa ?? null;
-    $tipo         = $request->$tipo ?? null;
-    $parcela      = $request->$parcela ?? null;
-    $vencimento   = $request->$vencimento ?? null;
-    $valor        = $request->$valor ?? null;
-    $categoria    = $request->$categoria ?? null;
-    $pagamento    = $request->$pagamento ?? null;
-    $valor_pago   = $request->$valor_pago ?? null;
-    $conta        = $request->$conta ?? null;
-    $observacao   = $request->$observacao ?? null;
-    $confirmado   = $request->$confirmado ?? 0;
-    $repete_meses = $request->$repeteMeses ?? null;
+    $despesa      = $request->despesa ?? null;
+    $tipo         = $request->tipo ?? null;
+    $parcela      = $request->parcela ?? null;
+    $vencimento   = $request->vencimento ?? null;
+    $valor        = $request->valor ?? null;
+    $categoria    = $request->categoria ?? null;
+    $pagamento    = $request->pagamento ?? null;
+    $valor_pago   = $request->valor_pago ?? null;
+    $conta        = $request->conta ?? null;
+    $observacao   = $request->observacao ?? null;
+    $confirmado   = $request->confirmado ?? 0;
+    $repete_meses = $request->repeteMeses ?? null;
 
     $Lancamento = [];
     $Lancamento["lan_despesa"]    = $despesa;
@@ -215,17 +215,17 @@ class Rest extends CI_Controller {
   public function editLancamento(){
     $request = proccessPost();
 
-    $id           = $request->$id ?? null;
-    $despesa      = $request->$despesa ?? null;
-    $tipo         = $request->$tipo ?? null;
-    $vencimento   = $request->$vencimento ?? null;
-    $valor        = $request->$valor ?? null;
-    $categoria    = $request->$categoria ?? null;
-    $pagamento    = $request->$pagamento ?? null;
-    $valor_pago   = $request->$valor_pago ?? null;
-    $conta        = $request->$conta ?? null;
-    $observacao   = $request->$observacao ?? null;
-    $confirmado   = $request->$confirmado ?? 0;
+    $id           = $request->id ?? null;
+    $despesa      = $request->despesa ?? null;
+    $tipo         = $request->tipo ?? null;
+    $vencimento   = $request->vencimento ?? null;
+    $valor        = $request->valor ?? null;
+    $categoria    = $request->categoria ?? null;
+    $pagamento    = $request->pagamento ?? null;
+    $valor_pago   = $request->valor_pago ?? null;
+    $conta        = $request->conta ?? null;
+    $observacao   = $request->observacao ?? null;
+    $confirmado   = $request->confirmado ?? 0;
 
     $Lancamento = [];
     $Lancamento["lan_id"]         = $id;
