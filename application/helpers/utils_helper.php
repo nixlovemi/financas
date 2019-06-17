@@ -444,7 +444,7 @@ function mask($val, $mask)
 function sendPushNotifications($to=array(), $data=array()){
     $apiKey = 'AIzaSyADY0AQlCREEQTp8io1EC_iJu9BZsL4fHg'; #api key do financas
     $fields = [
-        //"to"             => $to, #específico pra 1 pessoa
+        //"to"             => $to, #específico pra 1 pessoa | usa ssim pra topicos: 'to' => '/topics/lelex'
         "registration_ids" => $to, #1 ate 1000
         "notification"     => $data,
     ];
