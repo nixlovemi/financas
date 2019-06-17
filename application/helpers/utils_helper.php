@@ -440,3 +440,33 @@ function mask($val, $mask)
 
   return $maskared;
 }
+
+function sendPushNotifications($to=array(), $data=array()){
+    $apiKey = 'AIzaSyADY0AQlCREEQTp8io1EC_iJu9BZsL4fHg'; #api key do financas
+    $fields = [
+        //"to"             => $to, #específico pra 1 pessoa
+        "registration_ids" => $to, #1 ate 1000
+        "notification"     => $data,
+    ];
+
+    $headers = [
+        "Authorization: key=$apiKey",
+        "Content-Type: application/json",
+    ];
+
+    $url = "https://fcm.googleapis.com/fcm/send";
+
+    $ch     = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+
+    $result = curl_exec($ch);
+    curl_close($ch);
+
+    return json_decode($result, true);
+}

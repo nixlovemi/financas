@@ -16,6 +16,26 @@ class Rest extends CI_Controller {
     $this->load->helper("utils_helper");
   }
 
+  // esquema do FCM Google
+  public function fcmNotifContasPagar(){
+    $hoje = date("Y-m-d");
+
+    $this->load->model('Tb_Lancamento');
+    $return = $this->Tb_Lancamento->restFcmNotifContasPagar($hoje);
+
+    if($return !== false){
+      $to   = ["e0ZCL_xy89g:APA91bEErtpiD-uH_-ojwyK3vGMSeWXoS6gSQc0oIcmPNUSi20OfeLqRaSGdCrxJGRrz3C4xyFTq3lsatFBJBy7-XGDyUwaxc_UDICPiMaUyugWK0du4fD95e2sqKL_ulhTjXfztmQeb"];
+      $data = [
+        "title" => "Contas a Vencer",
+        "body"  => $return,
+        "sound" => "default",
+      ];
+      $result = sendPushNotifications($to, $data);
+      print_r($result);
+    }
+  }
+  // =====================
+
   // tb_base_despesa
   public function getBaseDespesa(){
     $request = proccessPost();

@@ -1012,4 +1012,29 @@ class Tb_Lancamento extends CI_Model {
     $retLancamento = $this->delete($lanId);
     return $retLancamento;
   }
+
+  public function restFcmNotifContasPagar($data){
+    $this->load->database();
+
+    $sql = "SELECT COUNT(*) AS qt_contas
+            		,SUM(lan_valor) AS tot_contas
+            FROM tb_lancamento
+            WHERE lan_tipo = 'D'
+            AND lan_pagamento IS NULL
+            AND lan_valor_pago IS NULL
+            AND lan_vencimento = '$data'";
+    $query = $this->db->query($sql);
+    $arrRs = $query->row();
+
+    if(!isset($arrRs)){
+      return false;
+    } else {
+      $dataFormat = date("d/m/Y", strtotime($data));
+      $qtContas   = $arrRs->qt_contas;
+      $totContas  = "R$" . number_format($arrRs->tot_contas, 2, ",", ".");
+
+      $strRet     = "Você tem $qtContas contas que vencem no dia $dataFormat, no total de $totContas.";
+      return $strRet;
+    }
+  }
 }
