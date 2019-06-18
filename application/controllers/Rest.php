@@ -24,7 +24,7 @@ class Rest extends CI_Controller {
     $return = $this->Tb_Lancamento->restFcmNotifContasPagar($hoje);
 
     if($return !== false){
-      $to   = ["e0ZCL_xy89g:APA91bEErtpiD-uH_-ojwyK3vGMSeWXoS6gSQc0oIcmPNUSi20OfeLqRaSGdCrxJGRrz3C4xyFTq3lsatFBJBy7-XGDyUwaxc_UDICPiMaUyugWK0du4fD95e2sqKL_ulhTjXfztmQeb"];
+      $to   = ["eBIf9IyhkVM:APA91bGpDMYZ2BwwqPkUFQS-aTTmZ4Z0s4s175GBLhAymwsTG3SYwqAjfMBnz6mEKRV0JKznEJV3Y6IJ2RgRWNzSve9fTl5qIdOQvfoTdzc24cUS2hv2h3Xp4h_PJD2jPEJov7-WC8QK"];
       $data = [
         "title" => "Contas a Vencer",
         "body"  => $return,
