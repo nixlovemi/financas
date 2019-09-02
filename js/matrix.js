@@ -446,6 +446,10 @@ $(document).on('click', '#btnDeletaLctoGrupo', function () {
         }
     });
 });
+
+$(document).on('click', '#ckbLancamentosTodos', function () {
+    $('#tbProdutoGetHtmlList tbody input:checkbox').not(this).prop('checked', this.checked);
+});
 // ===========
 
 function loadObjects() {

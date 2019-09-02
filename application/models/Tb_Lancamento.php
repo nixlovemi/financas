@@ -92,7 +92,7 @@ class Tb_Lancamento extends CI_Model {
     $htmlTable .= "<table class='table table-bordered dynatable' id='tbProdutoGetHtmlList'>";
     $htmlTable .= "  <thead>";
     $htmlTable .= "    <tr>";
-    $htmlTable .= "      <th>&nbsp;</th>";
+    $htmlTable .= "      <th><input type='checkbox' id='ckbLancamentosTodos' value='T' /></th>";
     $htmlTable .= "      <th>ID</th>";
     $htmlTable .= "      <th>Descrição</th>";
     $htmlTable .= "      <th>Tipo</th>";
