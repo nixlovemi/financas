@@ -87,6 +87,7 @@ class Tb_Lancamento extends CI_Model {
     $htmlTable  = "";
     $htmlTable .= "<div style='display:block; margin:8px 0 15px 4px'>";
     $htmlTable .= "  <a class='btn btn-info' href='javascript:;' id='btnBaixaLctoGrupo'>DAR BAIXA EM GRUPO</a>";
+    $htmlTable .= "  <a class='btn btn-info' href='javascript:;' id='btnDeletaLctoGrupo'>DELETAR SELECIONADOS</a>";
     $htmlTable .= "</div>";
     $htmlTable .= "<table class='table table-bordered dynatable' id='tbProdutoGetHtmlList'>";
     $htmlTable .= "  <thead>";
