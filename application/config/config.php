@@ -23,7 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$client  = @$_SERVER['HTTP_CLIENT_IP'];
+/*$client  = @$_SERVER['HTTP_CLIENT_IP'];
 $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
 $remote  = $_SERVER['REMOTE_ADDR'];
 if (filter_var($client, FILTER_VALIDATE_IP)) {
@@ -32,8 +32,8 @@ if (filter_var($client, FILTER_VALIDATE_IP)) {
   $ip = $forward;
 } else {
   $ip = $remote;
-}
-$config['base_url'] = "http://$ip/financas/";
+}*/
+$config['base_url'] = "http://crochepassoapasso.com.br/financas/";
 
 /*
 |--------------------------------------------------------------------------
@@ -168,7 +168,7 @@ $config['composer_autoload'] = FALSE;
 | DO NOT CHANGE THIS UNLESS YOU FULLY UNDERSTAND THE REPERCUSSIONS!!
 |
 */
-$config['permitted_uri_chars'] = 'a-z 0-9~%.:_\-';
+$config['permitted_uri_chars'] = 'a-z 0-9~%.:_\-=';
 
 /*
 |--------------------------------------------------------------------------

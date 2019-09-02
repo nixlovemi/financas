@@ -1,6 +1,8 @@
 <?php
 class Tb_Lancamento extends CI_Model {
   public function getHtmlLancamentos($arrFilters=array(), $edit=true, $returnJson=false){
+    require_once(APPPATH . '/helpers/utils_helper.php');
+
     // filtros
     $vMesBase   = isset($arrFilters["mesBase"]) ? $arrFilters["mesBase"]: (int) date("m");
     $vAnoBase   = isset($arrFilters["anoBase"]) ? $arrFilters["anoBase"]: (int) date("Y");
@@ -88,6 +90,7 @@ class Tb_Lancamento extends CI_Model {
     $htmlTable .= "<div style='display:block; margin:8px 0 15px 4px'>";
     $htmlTable .= "  <a class='btn btn-info' href='javascript:;' id='btnBaixaLctoGrupo'>DAR BAIXA EM GRUPO</a>";
     $htmlTable .= "  <a class='btn btn-info' href='javascript:;' id='btnDeletaLctoGrupo'>DELETAR SELECIONADOS</a>";
+    $htmlTable .= "  <a class='btn btn-success' href='javascript:;' id='btnXlsLctoGrupo'>GERAR XLS  </a>";
     $htmlTable .= "</div>";
     $htmlTable .= "<table class='table table-bordered dynatable' id='tbProdutoGetHtmlList'>";
     $htmlTable .= "  <thead>";
@@ -221,6 +224,10 @@ class Tb_Lancamento extends CI_Model {
 
     $htmlTable .= "  </tbody>";
     $htmlTable .= "</table>";
+
+    $jsonFilter  = json_encode($arrFilters);
+    $jsonFilterC = base64url_encode($jsonFilter);
+    $htmlTable  .= "<input type='hidden' id='hddnXlsLcto' value='$jsonFilterC' />";
 
     $htmlTable .= "<br />";
     $htmlTable .= "<div class='widget-box widget-plain'>";

@@ -569,4 +569,67 @@ class Lancamentos extends MY_Controller {
 
     echo json_encode($arrRet);
   }
+
+  public function xlsLcto($jsonFilterC)
+  {
+      require_once(APPPATH . '/helpers/utils_helper.php');
+      $jsonFilter = base64url_decode($jsonFilterC);
+      $arrFilters = json_decode($jsonFilter, true);
+      
+      $this->load->model("Tb_Lancamento");
+      $ret  = $this->Tb_Lancamento->getHtmlLancamentos($arrFilters, false, true); //["rows"] | ["totais"] | ["limit"] | ["offset"]
+      $rows = $ret["rows"] ?? array();
+
+      $html = "";
+      if(count($rows) > 0){
+        $arquivo = "XlsLancamentos.xls";
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="'.$arquivo.'"');
+        header('Cache-Control: max-age=0');
+        // Se for o IE9, isso talvez seja necessário
+        header('Cache-Control: max-age=1');
+
+        $html .= "<table border='1'>";
+        $html .= "  <tr>";
+        $html .= "    <td>Despesa</td>";
+        $html .= "    <td>Tipo</td>";
+        $html .= "    <td>Categoria</td>";
+        $html .= "    <td>Parcela</td>";
+        $html .= "    <td>Vencimento</td>";
+        $html .= "    <td>Valor</td>";
+        $html .= "    <td>Pagamento</td>";
+        $html .= "    <td>Valor Pago</td>";
+        $html .= "    <td>Conta</td>";
+        $html .= "  </tr>";
+        foreach($rows as $rs){
+          $despesa    = $rs["lanDespesa"] ?? "";
+          $tipo       = $rs["tipo"] ?? "";
+          $categoria  = $rs["despesa"] ?? "";
+          $parcela    = $rs["parcNr"] ?? "";
+          $vencimento = $rs["lanVcto"] ?? "";
+          $valor      = $rs["lanValor"] ?? "";
+          $pagamento  = $rs["lanPgto"] ?? "";
+          $valor_pago = $rs["lanVlrPg"] ?? "";
+          $conta      = $rs["conta"] ?? "";
+
+          $html .= "<tr>";
+          $html .= "  <td>$despesa</td>";
+          $html .= "  <td>$tipo</td>";
+          $html .= "  <td>$categoria</td>";
+          $html .= "  <td>$parcela</td>";
+          $html .= "  <td>$vencimento</td>";
+          $html .= "  <td>$valor</td>";
+          $html .= "  <td>$pagamento</td>";
+          $html .= "  <td>$valor_pago</td>";
+          $html .= "  <td>$conta</td>";
+          $html .= "</tr>";
+        }
+        $html .= "</table>";
+      } else {
+        $html .= "Nenhum resultado!";
+      }
+
+      //@todo vou montar aqui o XLS mas poderia ser numa view
+      echo $html;
+  }
 }

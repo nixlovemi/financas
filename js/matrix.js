@@ -450,6 +450,11 @@ $(document).on('click', '#btnDeletaLctoGrupo', function () {
 $(document).on('click', '#ckbLancamentosTodos', function () {
     $('#tbProdutoGetHtmlList tbody input:checkbox').not(this).prop('checked', this.checked);
 });
+
+$(document).on('click', '#btnXlsLctoGrupo', function () {
+    var jsonFilterC = $('#hddnXlsLcto').val();
+    window.open(HOME_URL + 'Lancamentos/xlsLcto/' + jsonFilterC, '_blank'); 
+});
 // ===========
 
 function loadObjects() {
