@@ -371,10 +371,11 @@ class Tb_Conta extends CI_Model {
     return $arrRet;
   }
 
-  public function getHtmlSaldoContas($mes, $ano){
+  public function getHtmlSaldoContas($mes, $ano, $retArray=false){
     $html        = "";
     $mes         = str_pad($mes, 2, "0", STR_PAD_LEFT);
     $arrRetSaldo = $this->getSaldoContas($mes, $ano);
+    $arrReturn   = [];
 
     // pega dados do mes anterior
     $dtMesAnterior       = date('Y-m-d', strtotime('-1 day', strtotime($ano . "-" . $mes . "-01")));
@@ -442,6 +443,21 @@ class Tb_Conta extends CI_Model {
           $html .= "    <td>$strTransfMes</td>";
           $html .= "    <td>$strSaldo</td>";
           $html .= "  </tr>";
+
+          $arrReturn[] = array(
+            "contaDesc"     => $contaDesc,
+            "contaSigla"    => $contaSigla,
+            "strSaldoIni"   => $strSaldoIni,
+            "saldoIni"      => $saldoInicial,
+            "strReceitaMes" => $strReceitaMes,
+            "receitaMes"    => $receitasMes,
+            "strDespesaMes" => $strDespesaMes,
+            "despesaMes"    => $despesasMes,
+            "strTransfMes"  => $strTransfMes,
+            "strTransfMes"  => $trasnfMes,
+            "strSaldo"      => $strSaldo,
+            "saldo"         => $contaSaldo,
+          );
         }
 
         $strTotReceita = "R$" . number_format($totReceita, 2, ",", ".");
@@ -461,7 +477,11 @@ class Tb_Conta extends CI_Model {
       }
     }
 
-    return $html;
+    if($retArray){
+      return $arrReturn;
+    } else {
+      return $html;
+    }
   }
 
   public function restGetConta($id){

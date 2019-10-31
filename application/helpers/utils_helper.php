@@ -441,12 +441,36 @@ function mask($val, $mask)
   return $maskared;
 }
 
-function sendPushNotifications($to=array(), $data=array()){
-    $apiKey = 'AIzaSyADY0AQlCREEQTp8io1EC_iJu9BZsL4fHg'; #api key do financas
+function sendPushNotifications($to="", $data=array()){
+    $apiKey = 'AAAAW8WovCA:APA91bFQdgVni4StZo2_Y-H4AA-ufBpmOgLN4ehm2p8mNX7ue1RA_309ggSeYKGJo5KgyvMpPLkpG6m3OEEx81co33-w4pe_53d6yYEodgKi0MndyJyZuWYBwlmeLjSu0bM8yCWslmgV';
     $fields = [
-        //"to"             => $to, #específico pra 1 pessoa | usa ssim pra topicos: 'to' => '/topics/lelex'
-        "registration_ids" => $to, #1 ate 1000
-        "notification"     => $data,
+        "to"           => $to,
+        "notification" => $data,
+        "options"      => array(
+          "priority" => "high"
+        )
+    ];
+    $headers = [
+        "Authorization: key=$apiKey",
+        "Content-Type: application/json",
+    ];
+    $url = "https://fcm.googleapis.com/fcm/send";
+    $ch     = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+    $result = curl_exec($ch);
+    curl_close($ch);
+    return json_decode($result, true);
+    
+    /*$apiKey = 'AIzaSyAGYKfXdt47eXyRbpQ1KLxN9e_EQodmLjU';
+    $fields = [
+        "to"           => $to, #específico pra 1 pessoa
+        "notification" => $data,
+        //"registration_ids" => $to, #1 ate 1000
     ];
 
     $headers = [
@@ -466,7 +490,8 @@ function sendPushNotifications($to=array(), $data=array()){
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
 
     $result = curl_exec($ch);
+    var_dump($result);
     curl_close($ch);
 
-    return json_decode($result, true);
+    return json_decode($result, true);*/
 }

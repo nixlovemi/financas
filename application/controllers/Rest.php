@@ -24,7 +24,8 @@ class Rest extends CI_Controller {
     $return = $this->Tb_Lancamento->restFcmNotifContasPagar($hoje);
 
     if($return !== false){
-      $to   = ["eBIf9IyhkVM:APA91bGpDMYZ2BwwqPkUFQS-aTTmZ4Z0s4s175GBLhAymwsTG3SYwqAjfMBnz6mEKRV0JKznEJV3Y6IJ2RgRWNzSve9fTl5qIdOQvfoTdzc24cUS2hv2h3Xp4h_PJD2jPEJov7-WC8QK"];
+      // $to   = ["eBIf9IyhkVM:APA91bGpDMYZ2BwwqPkUFQS-aTTmZ4Z0s4s175GBLhAymwsTG3SYwqAjfMBnz6mEKRV0JKznEJV3Y6IJ2RgRWNzSve9fTl5qIdOQvfoTdzc24cUS2hv2h3Xp4h_PJD2jPEJov7-WC8QK"];
+      $to   = "/topics/financasapp";
       $data = [
         "title" => "Contas a Vencer",
         "body"  => $return,
@@ -183,6 +184,18 @@ class Rest extends CI_Controller {
     $arrRet = $this->Tb_Conta->getContas();
 
     echo json_encode($arrRet);
+  }
+
+  public function getSaldoContas()
+  {
+    $request = proccessPost();
+    $mes     = $request->mes;
+    $ano     = $request->ano;
+
+    $this->load->model('Tb_Conta');
+    $ret = $this->Tb_Conta->getHtmlSaldoContas($mes, $ano, true);
+
+    echo json_encode($ret);
   }
   // ===============
 
