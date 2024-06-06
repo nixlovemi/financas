@@ -49,11 +49,11 @@ class Tb_Lancamento extends CI_Model {
     }
 
     if($vMesBase != ""){
-      $sqlFilter .= " AND EXTRACT(MONTH FROM lan_vencimento) = $vMesBase ";
+      $sqlFilter .= " AND EXTRACT(MONTH FROM COALESCE(lan_pagamento, lan_vencimento)) = $vMesBase ";
     }
 
     if($vAnoBase != ""){
-      $sqlFilter .= " AND EXTRACT(YEAR FROM lan_vencimento) = $vAnoBase ";
+      $sqlFilter .= " AND EXTRACT(YEAR FROM COALESCE(lan_pagamento, lan_vencimento)) = $vAnoBase ";
     }
 
     if($vDescricao != ""){
@@ -131,12 +131,13 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= "        , lan_valor_pago ";
     $vSql .= "        , con_sigla ";
     $vSql .= "        , lan_confirmado ";
+    $vSql .= "        , lan_compra ";
     $vSql .= " FROM tb_lancamento ";
     $vSql .= " LEFT JOIN tb_base_despesa ON bdp_id = lan_categoria ";
     $vSql .= " LEFT JOIN tb_conta ON con_id = lan_conta ";
     $vSql .= " WHERE 1=1 ";
     $vSql .= " $sqlFilter ";
-    $vSql .= " ORDER BY lan_vencimento, lan_id ";
+    $vSql .= " ORDER BY lan_pagamento, lan_vencimento, lan_compra, lan_id ";
     if($vLimit <> '' && is_numeric($vLimit)){
       $vSql .= " LIMIT $vLimit ";
     }
@@ -177,14 +178,19 @@ class Tb_Lancamento extends CI_Model {
         $lanDespesa = $rs1["lan_despesa"];
         $tipo       = $rs1["tipo"];
         $parcNr     = $rs1["lan_parcela"];
+        $lanCompra  = (strlen($rs1["lan_compra"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_compra"])): "";
         $lanVcto    = (strlen($rs1["lan_vencimento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_vencimento"])): "";
-        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "R$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
+        $lanValor   = (is_numeric($rs1["lan_valor"])) ? CURRENCY_SYMBOL . " " . number_format($rs1["lan_valor"], 2, ",", "."): "";
         $despesa    = $rs1["bdp_descricao"];
         $lanPgto    = (strlen($rs1["lan_pagamento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_pagamento"])): "";
-        $lanVlrPg   = (is_numeric($rs1["lan_valor_pago"])) ? "R$ " . number_format($rs1["lan_valor_pago"], 2, ",", "."): "";
+        $lanVlrPg   = (is_numeric($rs1["lan_valor_pago"])) ? CURRENCY_SYMBOL . " " . number_format($rs1["lan_valor_pago"], 2, ",", "."): "";
         $conta      = $rs1["con_sigla"];
 
         $cssColor   = ($rs1["lan_confirmado"] == 1) ? "color:#3079ca;": "";
+        $spnLanVcto = $lanVcto;
+        if($lanCompra != '') {
+            $spnLanVcto = "<span style='text-decoration: underline' title='Dt Compra: $lanCompra'>$spnLanVcto</span>";
+        }
 
         $htmlTable .= "<tr>";
         $htmlTable .= "  <td><input type='checkbox' name='ckbLancamentos' value='$lanId' /></td>";
@@ -192,7 +198,7 @@ class Tb_Lancamento extends CI_Model {
         $htmlTable .= "  <td><span style='$cssColor'>$lanDespesa</span></td>";
         $htmlTable .= "  <td>$tipo</td>";
         $htmlTable .= "  <td>$parcNr</td>";
-        $htmlTable .= "  <td>$lanVcto</td>";
+        $htmlTable .= "  <td>$spnLanVcto</td>";
         $htmlTable .= "  <td>$lanValor</td>";
         $htmlTable .= "  <td>$despesa</td>";
         $htmlTable .= "  <td>$lanPgto</td>";
@@ -209,6 +215,7 @@ class Tb_Lancamento extends CI_Model {
           "lanDespesa"    => $lanDespesa,
           "tipo"          => $tipo,
           "parcNr"        => $parcNr,
+          "lanCompra"     => $lanCompra,
           "lanVcto"       => $lanVcto,
           "lanValor"      => $lanValor,
           "despesa"       => $despesa,
@@ -238,7 +245,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorRec, 2, ",", ".")."</strong>
+                            <strong>".CURRENCY_SYMBOL.number_format($totValorRec, 2, ",", ".")."</strong>
                             Total Valor (Receita)
                           </div>
                         </li>";
@@ -247,7 +254,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorPgRec, 2, ",", ".")."</strong>
+                            <strong>".CURRENCY_SYMBOL.number_format($totValorPgRec, 2, ",", ".")."</strong>
                             Total Pago (Receita)
                           </div>
                         </li>";
@@ -256,7 +263,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totNaoContabRec, 2, ",", ".")."</strong>
+                            <strong>".CURRENCY_SYMBOL.number_format($totNaoContabRec, 2, ",", ".")."</strong>
                             Total N&atilde;o Contabilizado (Receita)
                           </div>
                         </li>";
@@ -265,7 +272,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorDesp, 2, ",", ".")."</strong>
+                            <strong>".CURRENCY_SYMBOL.number_format($totValorDesp, 2, ",", ".")."</strong>
                             Total Valor (Despesa)
                           </div>
                         </li>";
@@ -274,7 +281,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorPgDesp, 2, ",", ".")."</strong>
+                            <strong>".CURRENCY_SYMBOL.number_format($totValorPgDesp, 2, ",", ".")."</strong>
                             Total Pago (Despesa)
                           </div>
                         </li>";
@@ -283,7 +290,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totNaoContabDesp, 2, ",", ".")."</strong>
+                            <strong>".CURRENCY_SYMBOL.number_format($totNaoContabDesp, 2, ",", ".")."</strong>
                             Total N&atilde;o Contabilizado (Despesa)
                           </div>
                         </li>";
@@ -341,7 +348,7 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= " LEFT JOIN tb_conta ON con_id = lan_conta ";
     $vSql .= " WHERE 1=1 ";
     $vSql .= " AND lan_id IN (" . implode(",", $arrLanId) . ")";
-    $vSql .= " ORDER BY lan_vencimento, lan_id ";
+    $vSql .= " ORDER BY lan_pagamento, lan_vencimento, lan_id ";
 
     $query = $this->db->query($vSql);
     $arrRs = $query->result_array();
@@ -357,7 +364,7 @@ class Tb_Lancamento extends CI_Model {
         $tipo       = $rs1["tipo"];
         $parcNr     = $rs1["lan_parcela"];
         $lanVcto    = (strlen($rs1["lan_vencimento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_vencimento"])): "";
-        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "R$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
+        $lanValor   = (is_numeric($rs1["lan_valor"])) ? CURRENCY_SYMBOL . " " . number_format($rs1["lan_valor"], 2, ",", "."): "";
         $despesa    = $rs1["bdp_descricao"];
 
         $htmlTable .= "<tr>";
@@ -374,7 +381,7 @@ class Tb_Lancamento extends CI_Model {
 
     $htmlTable .= "<tr>";
     $htmlTable .= "  <td colspan='5' align='right'><b>TOTAL</b></td>";
-    $htmlTable .= "  <td colspan='2'>"."R$ " . number_format($total, 2, ",", ".")."</td>";
+    $htmlTable .= "  <td colspan='2'>".CURRENCY_SYMBOL." " . number_format($total, 2, ",", ".")."</td>";
     $htmlTable .= "</tr>";
 
     $htmlTable .= "  </tbody>";
@@ -406,8 +413,8 @@ class Tb_Lancamento extends CI_Model {
       $totRealizado += $realizado;
 
       $categoria    = $rs1["categoria"];
-      $vlrPrevisto  = "R$".number_format($previsto, 2, ",", ".");
-      $vlrRealizado = "R$".number_format($realizado, 2, ",", ".");
+      $vlrPrevisto  = CURRENCY_SYMBOL.number_format($previsto, 2, ",", ".");
+      $vlrRealizado = CURRENCY_SYMBOL.number_format($realizado, 2, ",", ".");
 
       $html .= "  <tr style='$cssRed'>";
       $html .= "    <td>$categoria</td>";
@@ -417,13 +424,13 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $html .= "    <tr>";
-    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL PREVISTO: R$".number_format($totPrevisto, 2, ",", ".")."</center></td>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL PREVISTO: ".CURRENCY_SYMBOL.number_format($totPrevisto, 2, ",", ".")."</center></td>";
     $html .= "    </tr>";
     $html .= "    <tr>";
-    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL REALIZADO: R$".number_format($totRealizado, 2, ",", ".")."</center></td>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL REALIZADO: ".CURRENCY_SYMBOL.number_format($totRealizado, 2, ",", ".")."</center></td>";
     $html .= "    </tr>";
     $html .= "    <tr>";
-    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>DIFERENÇA: R$".number_format($totPrevisto - $totRealizado, 2, ",", ".")."</center></td>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>DIFERENÇA: ".CURRENCY_SYMBOL.number_format($totPrevisto - $totRealizado, 2, ",", ".")."</center></td>";
     $html .= "    </tr>";
     $html .= "  </tbody>";
     $html .= "</table>";
@@ -445,7 +452,7 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= "        , ROUND(COALESCE(mdp_valor, 0), 2) AS previsto ";
     $vSql .= "        , ROUND(SUM(COALESCE(lan_valor_pago, lan_valor)), 2) AS realizado ";
     $vSql .= " FROM tb_base_despesa ";
-    $vSql .= " LEFT JOIN tb_lancamento ON (lan_categoria = bdp_id AND lan_tipo = 'D' AND EXTRACT(MONTH FROM lan_vencimento) = $vMesBase AND EXTRACT(YEAR FROM lan_vencimento) = $vAnoBase) ";
+    $vSql .= " LEFT JOIN tb_lancamento ON (lan_categoria = bdp_id AND lan_tipo = 'D' AND EXTRACT(MONTH FROM COALESCE(lan_pagamento, lan_vencimento)) = $vMesBase AND EXTRACT(YEAR FROM COALESCE(lan_pagamento, lan_vencimento)) = $vAnoBase) ";
     $vSql .= " LEFT JOIN tb_meta_despesa ON (mdp_despesa = bdp_id AND mdp_mes = $vMesBase AND mdp_ano = $vAnoBase) ";
     $vSql .= " WHERE bdp_ativo = 1 ";
     $vSql .= " AND bdp_contabiliza = 1 ";
@@ -539,7 +546,7 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $this->load->database();
-    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_parcela, lan_vencimento, lan_valor, lan_categoria, bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao, lan_confirmado");
+    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_parcela, lan_compra, lan_vencimento, lan_valor, lan_categoria, bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao, lan_confirmado");
     $this->db->from("tb_lancamento");
     $this->db->join("tb_base_despesa", "bdp_id = lan_categoria", "left");
     $this->db->join("tb_conta", "con_id = lan_conta", "left");
@@ -570,6 +577,7 @@ class Tb_Lancamento extends CI_Model {
       $arrLancamentoDados["lan_tipo"]       = $row->lan_tipo;
       $arrLancamentoDados["str_tipo"]       = $strTipo;
       $arrLancamentoDados["lan_parcela"]    = $row->lan_parcela;
+      $arrLancamentoDados["lan_compra"]     = $row->lan_compra;
       $arrLancamentoDados["lan_vencimento"] = $row->lan_vencimento;
       $arrLancamentoDados["lan_valor"]      = $row->lan_valor;
       $arrLancamentoDados["lan_categoria"]  = $row->lan_categoria;
@@ -684,6 +692,7 @@ class Tb_Lancamento extends CI_Model {
     $vDespesa    = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: null;
     $vTipo       = isset($arrLancamentoDados["lan_tipo"]) ? $arrLancamentoDados["lan_tipo"]: null;
     $vParcela    = isset($arrLancamentoDados["lan_parcela"]) && $arrLancamentoDados["lan_parcela"] != "" ? $arrLancamentoDados["lan_parcela"]: null;
+    $vCompra     = isset($arrLancamentoDados["lan_compra"]) && strlen($arrLancamentoDados["lan_compra"]) == 10 ? $arrLancamentoDados["lan_compra"]: null;
     $vVencimento = isset($arrLancamentoDados["lan_vencimento"]) && strlen($arrLancamentoDados["lan_vencimento"]) == 10 ? $arrLancamentoDados["lan_vencimento"]: null;
     $vValor      = isset($arrLancamentoDados["lan_valor"]) ? $arrLancamentoDados["lan_valor"]: null;
     $vCategoria  = isset($arrLancamentoDados["lan_categoria"]) && $arrLancamentoDados["lan_categoria"] > 0 ? $arrLancamentoDados["lan_categoria"]: null;
@@ -697,6 +706,7 @@ class Tb_Lancamento extends CI_Model {
       'lan_despesa'    => $vDespesa,
       'lan_tipo'       => $vTipo,
       'lan_parcela'    => $vParcela,
+      'lan_compra'     => $vCompra,
       'lan_vencimento' => $vVencimento,
       'lan_valor'      => $vValor,
       'lan_categoria'  => $vCategoria,
@@ -856,6 +866,7 @@ class Tb_Lancamento extends CI_Model {
     $vDespesa    = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: null;
     $vTipo       = isset($arrLancamentoDados["lan_tipo"]) ? $arrLancamentoDados["lan_tipo"]: null;
     $vParcela    = isset($arrLancamentoDados["lan_parcela"]) && $arrLancamentoDados["lan_parcela"] != "" ? $arrLancamentoDados["lan_parcela"]: null;
+    $vCompra     = isset($arrLancamentoDados["lan_compra"]) && strlen($arrLancamentoDados["lan_compra"]) == 10 ? $arrLancamentoDados["lan_compra"]: null;
     $vVencimento = isset($arrLancamentoDados["lan_vencimento"]) && strlen($arrLancamentoDados["lan_vencimento"]) == 10 ? $arrLancamentoDados["lan_vencimento"]: null;
     $vValor      = isset($arrLancamentoDados["lan_valor"]) && $arrLancamentoDados["lan_valor"] > 0 ? $arrLancamentoDados["lan_valor"]: null;
     $vCategoria  = isset($arrLancamentoDados["lan_categoria"]) && $arrLancamentoDados["lan_categoria"] > 0 ? $arrLancamentoDados["lan_categoria"]: null;
@@ -870,6 +881,7 @@ class Tb_Lancamento extends CI_Model {
     $Lancamento["lan_despesa"]    = $vDespesa;
     $Lancamento["lan_tipo"]       = $vTipo;
     $Lancamento["lan_parcela"]    = $vParcela;
+    $Lancamento["lan_compra"]     = $vCompra;
     $Lancamento["lan_vencimento"] = $vVencimento;
     $Lancamento["lan_valor"]      = $vValor;
     $Lancamento["lan_categoria"]  = $vCategoria;
@@ -1039,10 +1051,40 @@ class Tb_Lancamento extends CI_Model {
     } else {
       $dataFormat = date("d/m/Y", strtotime($data));
       $qtContas   = $arrRs->qt_contas;
-      $totContas  = "R$" . number_format($arrRs->tot_contas, 2, ",", ".");
+      $totContas  = CURRENCY_SYMBOL . number_format($arrRs->tot_contas, 2, ",", ".");
 
       $strRet     = "Você tem $qtContas contas que vencem no dia $dataFormat, no total de $totContas.";
       return $strRet;
     }
+  }
+
+  public function getRelDespesasMesData($dtIni, $dtFim)
+  {
+    if (strlen($dtIni) !== 10 || strlen($dtFim) !== 10) {
+        return [];
+    }
+
+    $this->load->database();
+    $sql = <<<SQL
+        SELECT lan_id
+            ,lan_despesa
+            ,lan_parcela
+            ,lan_compra
+            ,lan_vencimento
+            ,lan_valor
+            ,bdp_descricao
+            ,lan_pagamento
+            ,lan_valor_pago
+            ,con_nome
+            ,lan_observacao
+        FROM tb_lancamento
+        LEFT JOIN tb_conta ON (con_id = lan_conta)
+        LEFT JOIN tb_base_despesa ON (bdp_id = lan_categoria)
+        WHERE lan_tipo = 'D'
+        AND COALESCE(lan_compra, lan_vencimento) BETWEEN '$dtIni' AND '$dtFim'
+        ORDER BY bdp_descricao, COALESCE(lan_compra, lan_vencimento)
+    SQL;
+    $query = $this->db->query($sql);
+    return $query->result_array();
   }
 }

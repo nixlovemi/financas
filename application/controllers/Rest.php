@@ -194,7 +194,7 @@ class Rest extends CI_Controller {
 
     $this->load->model('Tb_Conta');
     $ret = $this->Tb_Conta->getHtmlSaldoContas($mes, $ano, true);
-
+    
     echo json_encode($ret);
   }
   // ===============

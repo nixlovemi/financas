@@ -12,7 +12,7 @@ $iconSize     = "43px";
     <ul class="stat-boxes2">
       <?php
       if( isset($arrInfoStart["cts_receber"]) ){
-        $totReceber = "R$" . number_format($arrInfoStart["cts_receber"], 2, ",", ".");
+        $totReceber = "$" . number_format($arrInfoStart["cts_receber"], 2, ",", ".");
         echo "<li>
                 <div class='left'>
                   <a href='".$basePath."ContaReceber/index'>
@@ -27,7 +27,7 @@ $iconSize     = "43px";
       }
 
       if( isset($arrInfoStart["cts_pagar"]) ){
-        $totPagar = "R$" . number_format($arrInfoStart["cts_pagar"], 2, ",", ".");
+        $totPagar = "$" . number_format($arrInfoStart["cts_pagar"], 2, ",", ".");
         echo "<li>
                 <div class='left'>
                   <a href='".$basePath."ContaPagar/index'>

@@ -1,5 +1,5 @@
 function moedaParaNumero(valor) {
-    return isNaN(valor) == false ? parseFloat(valor) : parseFloat(valor.replace("R$", "").replace(".", "").replace(",", "."));
+    return isNaN(valor) == false ? parseFloat(valor) : parseFloat(valor.replace("$", "").replace(".", "").replace(",", "."));
 }
 
 function numeroParaMoeda(n, c, d, t) {
@@ -373,7 +373,7 @@ $(document).on('click', '#btnGerenciarPrevisao', function () {
 
 $(document).on('click', '#btnBaixaLctoGrupo', function () {
     var arrayLanIds = [];
-    $("#dvHtmlLancamentos input:[type=checkbox]:checked").each(function () {
+    $("#dvHtmlLancamentos input:[type=checkbox]:checked:not(#ckbLancamentosTodos)").each(function () {
         arrayLanIds.push($(this).val());
     });
 
@@ -411,7 +411,7 @@ $(document).on('click', '#btnBaixaLctoGrupo', function () {
 
 $(document).on('click', '#btnDeletaLctoGrupo', function () {
     var arrayLanIds = [];
-    $("#dvHtmlLancamentos input:[type=checkbox]:checked").each(function () {
+    $("#dvHtmlLancamentos input:[type=checkbox]:checked:not(#ckbLancamentosTodos)").each(function () {
         arrayLanIds.push($(this).val());
     });
 
@@ -453,7 +453,7 @@ $(document).on('click', '#ckbLancamentosTodos', function () {
 
 $(document).on('click', '#btnXlsLctoGrupo', function () {
     var jsonFilterC = $('#hddnXlsLcto').val();
-    window.open(HOME_URL + 'Lancamentos/xlsLcto/' + jsonFilterC, '_blank'); 
+    window.open(HOME_URL + 'Lancamentos/xlsLcto/' + jsonFilterC.replace(/=/g, "%61"), '_blank'); 
 });
 // ===========
 

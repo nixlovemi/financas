@@ -17,11 +17,11 @@ $htmlTable .= "  <tbody>";
 
 foreach($rsFluxo as $diaAtual => $row){
   $dia       = $row["dia"];
-  $receber   = "R$" . number_format($row["receber"], 2, ",", ".");
-  $pagar     = "R$" . number_format($row["pagar"], 2, ",", ".");
-  $saldoIni  = ($row["saldo_inicial"] > 0) ? "R$" . number_format($row["saldo_inicial"], 2, ",", "."): "";
-  $saldoDia  = "R$" . number_format($row["saldo_dia"], 2, ",", ".");
-  $acumulado = "R$" . number_format($row["acumulado"], 2, ",", ".");
+  $receber   = "$" . number_format($row["receber"], 2, ",", ".");
+  $pagar     = "$" . number_format($row["pagar"], 2, ",", ".");
+  $saldoIni  = ($row["saldo_inicial"] > 0) ? "$" . number_format($row["saldo_inicial"], 2, ",", "."): "";
+  $saldoDia  = "$" . number_format($row["saldo_dia"], 2, ",", ".");
+  $acumulado = "$" . number_format($row["acumulado"], 2, ",", ".");
 
   $cssSaldoDia  = ($row["saldo_dia"] < 0) ? "red": "blue";
   $cssAcumulado = ($row["acumulado"] < 0) ? "red": "blue";

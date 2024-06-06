@@ -589,6 +589,7 @@
       <script src="<?php echo base_url(); ?>js/matrix.form_common.js"></script>
       <script src="<?php echo base_url(); ?>js/matrix.popover.js"></script>
       <script src="<?php echo base_url(); ?>js/matrix.tables.js"></script>
+      <script src="<?php echo base_url(); ?>js/custom.js?r=<?=date('YmdHis')?>"></script>
       <script type="text/javascript">
          // This function is called from the pop-up menus to transfer to
          // a different page. Ignore if the value returned is a null string:

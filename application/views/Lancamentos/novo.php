@@ -16,6 +16,7 @@ $strDisabled  = ($detalhes) ? " disabled ": "";
 $vLanId         = isset($Lancamento["lan_id"]) ? $Lancamento["lan_id"]: "";
 $vLanDespesa    = isset($Lancamento["lan_despesa"]) ? $Lancamento["lan_despesa"]: "";
 $vLanTipo       = isset($Lancamento["lan_tipo"]) ? $Lancamento["lan_tipo"]: "";
+$vLanCompra     = isset($Lancamento["lan_compra"]) && strlen($Lancamento["lan_compra"]) == 10 ? date("d/m/Y", strtotime($Lancamento["lan_compra"])): "";
 $vLanVencimento = isset($Lancamento["lan_vencimento"]) && strlen($Lancamento["lan_vencimento"]) == 10 ? date("d/m/Y", strtotime($Lancamento["lan_vencimento"])): "";
 $vLanValor      = isset($Lancamento["lan_valor"]) ? number_format($Lancamento["lan_valor"], 2, ",", ""): "";
 $vLanCategoria  = isset($Lancamento["lan_categoria"]) ? $Lancamento["lan_categoria"]: "";
@@ -99,6 +100,12 @@ if($editar){
               </div>
             </div>
             <div class="control-group">
+              <label class="control-label">Dt Compra (Opcional)</label>
+              <div class="controls">
+                <input value="<?php echo $vLanCompra; ?>" class="span10 mask_datepicker" type="text" id="lanCompra" name="lanCompra" />
+              </div>
+            </div>
+            <div class="control-group">
               <label class="control-label">Vencimento</label>
               <div class="controls">
                 <input value="<?php echo $vLanVencimento; ?>" class="span10 mask_datepicker" type="text" id="lanVencimento" name="lanVencimento" />
@@ -108,7 +115,7 @@ if($editar){
               <label class="control-label">Valor</label>
               <div class="controls">
                 <div class="input-prepend">
-                  <span class="add-on">R$</span>
+                  <span class="add-on"><?=CURRENCY_SYMBOL?></span>
                   <input class="span10 mask_moeda" type="text" name="lanValor" id="lanValor" value="<?php echo $vLanValor; ?>" />
                 </div>
               </div>
@@ -123,7 +130,7 @@ if($editar){
               <label class="control-label">Valor Pago</label>
               <div class="controls">
                 <div class="input-prepend">
-                  <span class="add-on">R$</span>
+                  <span class="add-on"><?=CURRENCY_SYMBOL?></span>
                   <input class="span10 mask_moeda" type="text" name="lanValorPago" id="lanValorPago" value="<?php echo $vLanValorPago; ?>" />
                 </div>
               </div>

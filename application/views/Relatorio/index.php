@@ -2,9 +2,9 @@
 
 <?php
 $arrRelatorios = [];
-$arrRelatorios["Fluxo de Caixa"] = [];
-$arrRelatorios["Fluxo de Caixa"]["controller"] = "Relatorio";
-$arrRelatorios["Fluxo de Caixa"]["action"]     = "abreRelFluxoCx";
+$arrRelatorios["Detalhe Despesas do Mês"] = [];
+$arrRelatorios["Detalhe Despesas do Mês"]["controller"] = "Relatorio";
+$arrRelatorios["Detalhe Despesas do Mês"]["action"] = "openRelDespesasMes";
 
 if(isset($errorMsg) && $errorMsg != ""){
   echo $errorMsg;

@@ -73,28 +73,23 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = TRUE;
 
-/*
-define('DB_USER', 'root');
-define('DB_PASSWORD', '');
-define('DB_HOST', 'localhost');
-*/
-
 $db['default'] = array(
-	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'croche_pw',
-	'password' => 'verdaumsdrobs',
-	'database' => 'croche_financas',
-	'dbdriver' => 'mysqli',
+	'dsn'	   => '',
+	'hostname' => getenv('DB_HOST'),
+	'port'     => getenv('DB_PORT'),
+	'username' => getenv('DB_USER'),
+	'password' => getenv('DB_PASS'),
+	'database' => getenv('DB_NAME'),
+	'dbdriver' => getenv('DB_DRIVER'),
 	'dbprefix' => '',
 	'pconnect' => FALSE,
 	'db_debug' => (ENVIRONMENT !== 'production'),
 	'cache_on' => FALSE,
 	'cachedir' => '',
-	'char_set' => 'utf8',
-	'dbcollat' => 'utf8_general_ci',
+	'char_set' => getenv('DB_CHARSET'),
+	'dbcollat' => getenv('DB_COLLATION'),
 	'swap_pre' => '',
-	'encrypt' => FALSE,
+	'encrypt'  => FALSE,
 	'compress' => FALSE,
 	'stricton' => FALSE,
 	'failover' => array(),

@@ -174,10 +174,10 @@ class Tb_Lancamento extends CI_Model {
         $tipo       = $rs1["tipo"];
         $parcNr     = $rs1["lan_parcela"];
         $lanVcto    = (strlen($rs1["lan_vencimento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_vencimento"])): "";
-        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "R$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
+        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
         $despesa    = $rs1["bdp_descricao"];
         $lanPgto    = (strlen($rs1["lan_pagamento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_pagamento"])): "";
-        $lanVlrPg   = (is_numeric($rs1["lan_valor_pago"])) ? "R$ " . number_format($rs1["lan_valor_pago"], 2, ",", "."): "";
+        $lanVlrPg   = (is_numeric($rs1["lan_valor_pago"])) ? "$ " . number_format($rs1["lan_valor_pago"], 2, ",", "."): "";
         $conta      = $rs1["con_sigla"];
 
         $cssColor   = ($rs1["lan_confirmado"] == 1) ? "color:#3079ca;": "";
@@ -230,7 +230,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorRec, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totValorRec, 2, ",", ".")."</strong>
                             Total Valor (Receita)
                           </div>
                         </li>";
@@ -239,7 +239,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorPgRec, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totValorPgRec, 2, ",", ".")."</strong>
                             Total Pago (Receita)
                           </div>
                         </li>";
@@ -248,7 +248,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totNaoContabRec, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totNaoContabRec, 2, ",", ".")."</strong>
                             Total N&atilde;o Contabilizado (Receita)
                           </div>
                         </li>";
@@ -257,7 +257,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorDesp, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totValorDesp, 2, ",", ".")."</strong>
                             Total Valor (Despesa)
                           </div>
                         </li>";
@@ -266,7 +266,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorPgDesp, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totValorPgDesp, 2, ",", ".")."</strong>
                             Total Pago (Despesa)
                           </div>
                         </li>";
@@ -275,7 +275,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totNaoContabDesp, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totNaoContabDesp, 2, ",", ".")."</strong>
                             Total N&atilde;o Contabilizado (Despesa)
                           </div>
                         </li>";
@@ -349,7 +349,7 @@ class Tb_Lancamento extends CI_Model {
         $tipo       = $rs1["tipo"];
         $parcNr     = $rs1["lan_parcela"];
         $lanVcto    = (strlen($rs1["lan_vencimento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_vencimento"])): "";
-        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "R$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
+        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
         $despesa    = $rs1["bdp_descricao"];
 
         $htmlTable .= "<tr>";
@@ -366,7 +366,7 @@ class Tb_Lancamento extends CI_Model {
 
     $htmlTable .= "<tr>";
     $htmlTable .= "  <td colspan='5' align='right'><b>TOTAL</b></td>";
-    $htmlTable .= "  <td colspan='2'>"."R$ " . number_format($total, 2, ",", ".")."</td>";
+    $htmlTable .= "  <td colspan='2'>"."$ " . number_format($total, 2, ",", ".")."</td>";
     $htmlTable .= "</tr>";
 
     $htmlTable .= "  </tbody>";
@@ -398,8 +398,8 @@ class Tb_Lancamento extends CI_Model {
       $totRealizado += $realizado;
 
       $categoria    = $rs1["categoria"];
-      $vlrPrevisto  = "R$".number_format($previsto, 2, ",", ".");
-      $vlrRealizado = "R$".number_format($realizado, 2, ",", ".");
+      $vlrPrevisto  = CURRENCY_SYMBOL.number_format($previsto, 2, ",", ".");
+      $vlrRealizado = CURRENCY_SYMBOL.number_format($realizado, 2, ",", ".");
 
       $html .= "  <tr style='$cssRed'>";
       $html .= "    <td>$categoria</td>";
@@ -409,13 +409,13 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $html .= "    <tr>";
-    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL PREVISTO: R$".number_format($totPrevisto, 2, ",", ".")."</center></td>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL PREVISTO: ".CURRENCY_SYMBOL.number_format($totPrevisto, 2, ",", ".")."</center></td>";
     $html .= "    </tr>";
     $html .= "    <tr>";
-    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL REALIZADO: R$".number_format($totRealizado, 2, ",", ".")."</center></td>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL REALIZADO: ".CURRENCY_SYMBOL.number_format($totRealizado, 2, ",", ".")."</center></td>";
     $html .= "    </tr>";
     $html .= "    <tr>";
-    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>DIFERENÇA: R$".number_format($totPrevisto - $totRealizado, 2, ",", ".")."</center></td>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>DIFERENÇA: ".CURRENCY_SYMBOL.number_format($totPrevisto - $totRealizado, 2, ",", ".")."</center></td>";
     $html .= "    </tr>";
     $html .= "  </tbody>";
     $html .= "</table>";

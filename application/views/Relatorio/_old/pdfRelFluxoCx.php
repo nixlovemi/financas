@@ -29,11 +29,11 @@ $cFPDF->SetFillColor(255, 255, 255);
 $i = 1;
 foreach($arrRelFluxo as $row){
   $dia       = utf8_decode($row["dia"]);
-  $receber   = "R$" . number_format($row["receber"], 2, ",", ".");
-  $pagar     = "R$" . number_format($row["pagar"], 2, ",", ".");
-  $saldoIni  = ($row["saldo_inicial"] > 0) ? "R$" . number_format($row["saldo_inicial"], 2, ",", "."): "";
-  $saldoDia  = "R$" . number_format($row["saldo_dia"], 2, ",", ".");
-  $acumulado = "R$" . number_format($row["acumulado"], 2, ",", ".");
+  $receber   = "$" . number_format($row["receber"], 2, ",", ".");
+  $pagar     = "$" . number_format($row["pagar"], 2, ",", ".");
+  $saldoIni  = ($row["saldo_inicial"] > 0) ? "$" . number_format($row["saldo_inicial"], 2, ",", "."): "";
+  $saldoDia  = "$" . number_format($row["saldo_dia"], 2, ",", ".");
+  $acumulado = "$" . number_format($row["acumulado"], 2, ",", ".");
 
   if ($i % 2 == 0) {
     $cFPDF->SetFillColor(252, 252, 252);
