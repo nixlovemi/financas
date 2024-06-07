@@ -65,7 +65,6 @@ class Lancamentos extends MY_Controller {
     // variaveis ============
     $lanDespesa    = ($this->input->post('lanDespesa') != "") ? $this->input->post('lanDespesa'): null;
     $lanTipo       = ($this->input->post('lanTipo') != "") ? $this->input->post('lanTipo'): null;
-    $lanCategoria  = ($this->input->post('lanCategoria') != "") ? $this->input->post('lanCategoria'): null;
     $lanCompra     = (strlen($this->input->post('lanCompra')) == 10) ? acerta_data($this->input->post('lanCompra')): null;
     $lanVencimento = (strlen($this->input->post('lanVencimento')) == 10) ? acerta_data($this->input->post('lanVencimento')): null;
     $lanValor      = ($this->input->post('lanValor') != "") ? acerta_moeda($this->input->post('lanValor')): null;
@@ -80,7 +79,6 @@ class Lancamentos extends MY_Controller {
     $Lancamento = [];
     $Lancamento["lan_despesa"]    = $lanDespesa;
     $Lancamento["lan_tipo"]       = $lanTipo;
-    $Lancamento["lan_categoria"]  = $lanCategoria;
     $Lancamento["lan_compra"]     = $lanCompra;
     $Lancamento["lan_vencimento"] = $lanVencimento;
     $Lancamento["lan_valor"]      = $lanValor;
@@ -289,7 +287,6 @@ class Lancamentos extends MY_Controller {
 
     $Lancamento["lan_despesa"]    = $lanDespesa;
     $Lancamento["lan_tipo"]       = $lanTipo;
-    $Lancamento["lan_categoria"]  = $lanCategoria;
     $Lancamento["lan_compra"]     = $lanCompra;
     $Lancamento["lan_vencimento"] = $lanVencimento;
     $Lancamento["lan_valor"]      = $lanValor;

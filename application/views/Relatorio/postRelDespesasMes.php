@@ -39,7 +39,6 @@ foreach ($queryArr as $categoryStr => $row) {
     $htmlTable .= '    <th>Dt Vcto</th>';
     $htmlTable .= '    <th>Valor</th>';
     $htmlTable .= '    <th>Dt Pgto</th>';
-    $htmlTable .= '    <th>Valor Pago</th>';
     $htmlTable .= '    <th>Conta</th>';
     $htmlTable .= '    <th>Observação</th>';
     $htmlTable .= '  </tr>';
@@ -55,6 +54,8 @@ foreach ($queryArr as $categoryStr => $row) {
         $fDtCompra = (strlen($dtCompra) === 10) ? date('d/m/Y', strtotime($dtCompra)) : '';
         $dtVcto = isset($item['lan_vencimento']) ? $item['lan_vencimento']: '';
         $fDtVcto = (strlen($dtVcto) === 10) ? date('d/m/Y', strtotime($dtVcto)) : '';
+        $ldValor = isset($item['ld_valor']) ? $item['ld_valor']: '';
+        $fLdValor = ($ldValor <> '' && !$downloadXls) ? CURRENCY_SYMBOL . number_format($ldValor, 2, ',', '.'): $ldValor;
         $valor = isset($item['lan_valor']) ? $item['lan_valor']: '';
         $fValor = ($valor <> '' && !$downloadXls) ? CURRENCY_SYMBOL . number_format($valor, 2, ',', '.'): $valor;
         $dtPgto = isset($item['lan_pagamento']) ? $item['lan_pagamento']: '';
@@ -66,10 +67,7 @@ foreach ($queryArr as $categoryStr => $row) {
 
         // TOTAIS
         if ($valor !== '') {
-            $total += $valor;
-        }
-        if ($valorPago !== '') {
-            $totalPago += $valorPago;
+            $total += $ldValor;
         }
 
         $htmlTable .= '<tr>';
@@ -78,24 +76,20 @@ foreach ($queryArr as $categoryStr => $row) {
         $htmlTable .= '  <td>'.$parcela.'</td>';
         $htmlTable .= '  <td>'.$fDtCompra.'</td>';
         $htmlTable .= '  <td>'.$fDtVcto.'</td>';
-        $htmlTable .= '  <td>'.$fValor.'</td>';
+        $htmlTable .= '  <td>'.$fLdValor.'</td>';
         $htmlTable .= '  <td>'.$fDtPgto.'</td>';
-        $htmlTable .= '  <td>'.$fValorPago.'</td>';
         $htmlTable .= '  <td>'.$conta.'</td>';
         $htmlTable .= '  <td>'.$obs.'</td>';
         $htmlTable .= '</tr>';
     }
 
     // TOTAL ROW
-    $fTotal = (!$downloadXls) ? CURRENCY_SYMBOL . number_format($total, 2, ',', '.'): $total;
-    $fTotalPago = (!$downloadXls) ? CURRENCY_SYMBOL . number_format($totalPago, 2, ',', '.'): $totalPago;
+    $fTotal = (!$downloadXls) ? CURRENCY_SYMBOL . number_format($ldValor, 2, ',', '.'): $ldValor;
 
     $htmlTable .= '  <tr style="font-weight:bold;">';
     $htmlTable .= '    <td colspan="5">TOTAIS:</td>';
     $htmlTable .= '    <td>'.$fTotal.'</td>';
-    $htmlTable .= '    <td>&nbsp;</td>';
-    $htmlTable .= '    <td>'.$fTotalPago.'</td>';
-    $htmlTable .= '    <td colspan="2">&nbsp;</td>';
+    $htmlTable .= '    <td colspan="4">&nbsp;</td>';
     $htmlTable .= '  </tr>';
 
     $htmlTable .= '</tbody>';
@@ -105,15 +99,12 @@ foreach ($queryArr as $categoryStr => $row) {
 
 // TOTAL GERAL
 $fTotalGeral = (!$downloadXls) ? CURRENCY_SYMBOL . number_format($totalGeral, 2, ',', '.'): $totalGeral;
-$fTotalPagoGeral = (!$downloadXls) ? CURRENCY_SYMBOL . number_format($totalPagoGeral, 2, ',', '.'): $totalPagoGeral;
 
 $htmlTable .= '  <tfoot style="font-weight:bold;" bgcolor="d0d0d0">';
 $htmlTable .= '    <tr>';
 $htmlTable .= '      <td colspan="5">TOTAIS GERAIS:</td>';
 $htmlTable .= '      <td>'.$fTotalGeral.'</td>';
-$htmlTable .= '      <td>&nbsp;</td>';
-$htmlTable .= '      <td>'.$fTotalPagoGeral.'</td>';
-$htmlTable .= '      <td colspan="2">&nbsp;</td>';
+$htmlTable .= '      <td colspan="4">&nbsp;</td>';
 $htmlTable .= '    </tr>';
 $htmlTable .= '  </tfoot>';
 $htmlTable .= '</table>';

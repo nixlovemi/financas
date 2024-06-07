@@ -19,7 +19,6 @@ $vLanTipo       = isset($Lancamento["lan_tipo"]) ? $Lancamento["lan_tipo"]: "";
 $vLanCompra     = isset($Lancamento["lan_compra"]) && strlen($Lancamento["lan_compra"]) == 10 ? date("d/m/Y", strtotime($Lancamento["lan_compra"])): "";
 $vLanVencimento = isset($Lancamento["lan_vencimento"]) && strlen($Lancamento["lan_vencimento"]) == 10 ? date("d/m/Y", strtotime($Lancamento["lan_vencimento"])): "";
 $vLanValor      = isset($Lancamento["lan_valor"]) ? number_format($Lancamento["lan_valor"], 2, ",", ""): "";
-$vLanCategoria  = isset($Lancamento["lan_categoria"]) ? $Lancamento["lan_categoria"]: "";
 $vLanPagamento  = isset($Lancamento["lan_pagamento"]) && strlen($Lancamento["lan_pagamento"]) == 10 ? date("d/m/Y", strtotime($Lancamento["lan_pagamento"])): "";
 $vLanValorPago  = isset($Lancamento["lan_valor_pago"]) ? number_format($Lancamento["lan_valor_pago"], 2, ",", ""): "";
 $vLanConta      = isset($Lancamento["lan_conta"]) ? $Lancamento["lan_conta"]: "";
@@ -82,6 +81,9 @@ if($editar){
                 ?>
               </div>
             </div>
+            
+            <?php
+            /*
             <div class="control-group">
               <label class="control-label">Categoria</label>
               <div class="controls">
@@ -99,6 +101,9 @@ if($editar){
                 ?>
               </div>
             </div>
+            */
+            ?>
+
             <div class="control-group">
               <label class="control-label">Dt Compra (Opcional)</label>
               <div class="controls">
