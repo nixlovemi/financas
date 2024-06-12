@@ -74,6 +74,12 @@ class Lancamentos extends MY_Controller {
     $lanObservacao = ($this->input->post('lanObservacao') != "") ? $this->input->post('lanObservacao'): null;
     $lanConfirmado = ($this->input->post('lanConfirmado') != "") ? $this->input->post('lanConfirmado'): 0;
     $repeteMeses   = (is_numeric($this->input->post('repeteMeses')) && $this->input->post('repeteMeses') > 0) ? $this->input->post('repeteMeses'): null;
+
+    $arrCategorias    = (is_array($this->input->post('ldBdpId'))) ? $this->input->post('ldBdpId'): array();
+    $arrCategoriasVlr = (is_array($this->input->post('ldValor'))) ? $this->input->post('ldValor'): array();
+    foreach ($arrCategoriasVlr as &$valor) {
+      $valor = acerta_moeda($valor);
+    }
     // ======================
 
     $Lancamento = [];
@@ -87,6 +93,8 @@ class Lancamentos extends MY_Controller {
     $Lancamento["lan_conta"]      = $lanConta;
     $Lancamento["lan_observacao"] = $lanObservacao;
     $Lancamento["lan_confirmado"] = $lanConfirmado;
+    $Lancamento["ld_bdp_id"]      = $arrCategorias;
+    $Lancamento["ld_valor"]       = $arrCategoriasVlr;
 
     $this->load->model('Tb_Lancamento');
     $retInsert = $this->Tb_Lancamento->insert($Lancamento, $repeteMeses);
@@ -262,7 +270,6 @@ class Lancamentos extends MY_Controller {
     $lanId         = $this->input->post('lanId') > 0 ? $this->input->post('lanId'): -1;
     $lanDespesa    = ($this->input->post('lanDespesa') != "") ? $this->input->post('lanDespesa'): null;
     $lanTipo       = ($this->input->post('lanTipo') != "") ? $this->input->post('lanTipo'): null;
-    $lanCategoria  = ($this->input->post('lanCategoria') != "") ? $this->input->post('lanCategoria'): null;
     $lanCompra     = (strlen($this->input->post('lanCompra')) == 10) ? acerta_data($this->input->post('lanCompra')): null;
     $lanVencimento = (strlen($this->input->post('lanVencimento')) == 10) ? acerta_data($this->input->post('lanVencimento')): null;
     $lanValor      = ($this->input->post('lanValor') != "") ? acerta_moeda($this->input->post('lanValor')): null;
@@ -271,6 +278,12 @@ class Lancamentos extends MY_Controller {
     $lanConta      = ($this->input->post('lanConta') != "") ? $this->input->post('lanConta'): null;
     $lanObservacao = ($this->input->post('lanObservacao') != "") ? $this->input->post('lanObservacao'): null;
     $lanConfirmado = ($this->input->post('lanConfirmado') != "") ? $this->input->post('lanConfirmado'): 0;
+
+    $arrCategorias    = (is_array($this->input->post('ldBdpId'))) ? $this->input->post('ldBdpId'): array();
+    $arrCategoriasVlr = (is_array($this->input->post('ldValor'))) ? $this->input->post('ldValor'): array();
+    foreach ($arrCategoriasVlr as &$valor) {
+      $valor = acerta_moeda($valor);
+    }
     // ======================
 
     $this->load->model('Tb_Lancamento');
@@ -295,6 +308,8 @@ class Lancamentos extends MY_Controller {
     $Lancamento["lan_conta"]      = $lanConta;
     $Lancamento["lan_observacao"] = $lanObservacao;
     $Lancamento["lan_confirmado"] = $lanConfirmado;
+    $Lancamento["ld_bdp_id"]      = $arrCategorias;
+    $Lancamento["ld_valor"]       = $arrCategoriasVlr;
 
     $retUpdate = $this->Tb_Lancamento->edit($Lancamento);
     if( $retUpdate["erro"] ){

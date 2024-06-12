@@ -11,7 +11,6 @@ $detalhes    = isset($detalhes) ? $detalhes: false;
 $editar      = isset($editar) ? $editar: false;
 
 $strReadyonly = ($detalhes) ? " readonly ": "";
-$strDisabled  = ($detalhes) ? " disabled ": "";
 
 $vLanId         = isset($Lancamento["lan_id"]) ? $Lancamento["lan_id"]: "";
 $vLanDespesa    = isset($Lancamento["lan_despesa"]) ? $Lancamento["lan_despesa"]: "";
@@ -24,6 +23,9 @@ $vLanValorPago  = isset($Lancamento["lan_valor_pago"]) ? number_format($Lancamen
 $vLanConta      = isset($Lancamento["lan_conta"]) ? $Lancamento["lan_conta"]: "";
 $vLanObservacao = isset($Lancamento["lan_observacao"]) ? $Lancamento["lan_observacao"]: "";
 $vLanConfirmado = isset($Lancamento["lan_confirmado"]) ? $Lancamento["lan_confirmado"]: 0;
+
+$arrCategorias = isset($Lancamento["ld_bdp_id"]) ? $Lancamento["ld_bdp_id"]: array();
+$arrCategoriasVlr = isset($Lancamento["ld_valor"]) ? $Lancamento["ld_valor"]: array();
 
 $vCheckConfirm  = $vLanConfirmado == 1 ? " checked ": "";
 
@@ -81,28 +83,6 @@ if($editar){
                 ?>
               </div>
             </div>
-            
-            <?php
-            /*
-            <div class="control-group">
-              <label class="control-label">Categoria</label>
-              <div class="controls">
-                <?php
-                echo "<select $strReadyonly class='span10' name='lanCategoria' id='lanCategoria'>";
-                echo "<option value=''></option>";
-                foreach($arrBaseDesp as $categoria){
-                  $bdpId    = $categoria["bdp_id"];
-                  $bdpDesc  = $categoria["bdp_descricao"];
-                  $selected = ($bdpId == $vLanCategoria) ? " selected ": "";
-
-                  echo "<option $selected value='$bdpId'>$bdpDesc</option>";
-                }
-                echo "</select>";
-                ?>
-              </div>
-            </div>
-            */
-            ?>
 
             <div class="control-group">
               <label class="control-label">Dt Compra (Opcional)</label>
@@ -138,6 +118,68 @@ if($editar){
                   <span class="add-on"><?=CURRENCY_SYMBOL?></span>
                   <input class="span10 mask_moeda" type="text" name="lanValorPago" id="lanValorPago" value="<?php echo $vLanValorPago; ?>" />
                 </div>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label">Categoria</label>
+              <div class="controls">
+                <a id="btn-nova-linha" style="margin-bottom:8px;" class="btn btn-small btn-success" href="javascript:;">Nova linha</a>
+
+                <table id="tblLancamentoDespesa" class="table table-bordered table-condensed table-striped">
+                  <thead>
+                    <tr>
+                      <th>Categoria</th>
+                      <th>Valor</th>
+                      <th>Remover</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    
+                      <?php
+                      $i = 0;
+                      do {
+                      ?>
+                        <tr>
+                          <td width="50%">
+                            <?php
+                            $trashDisplay = $i == 0 ? "display:none;": "";
+                            $categoria1 = isset($arrCategorias[$i]) ? $arrCategorias[$i]: "";
+                            $categoriaVlr1 = isset($arrCategoriasVlr[$i]) ? number_format($arrCategoriasVlr[$i], 2, ",", ""): "";
+
+                            echo "<select $strReadyonly class='span10' name='ldBdpId[]'>";
+                            echo "<option value=''></option>";
+                            foreach($arrBaseDesp as $categoria){
+                              $bdpId    = $categoria["bdp_id"];
+                              $bdpDesc  = $categoria["bdp_descricao"];
+                              $selected = ($bdpId == $categoria1) ? " selected ": "";
+
+                              echo "<option $selected value='$bdpId'>$bdpDesc</option>";
+                            }
+                            echo "</select>";
+                            ?>
+                          </td>
+                          <td width="40%">
+                            <div class="input-prepend">
+                              <span class="add-on"><?=CURRENCY_SYMBOL?></span>
+                              <input <?=$strReadyonly?> class="span8 mask_moeda" type="text" name="ldValor[]" value="<?=$categoriaVlr1?>" />
+                            </div>
+                          </td>
+                          <td width="10%" style="text-align:center">
+                            <?php if($strReadyonly == ''): ?>
+                              <a style="<?=$trashDisplay?>" href="javascript:;" class="TbLancamentoDespesa_ajax_deletar">
+                                <i class="icon-trash icon-lista"></i>
+                              </a>
+                            <?php endif; ?>
+                          </td>
+                        </tr>
+
+                        <?php
+                          $i++;
+                        } while($i < count($arrCategorias));
+                      ?>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
             <div class="control-group">

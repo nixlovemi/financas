@@ -156,15 +156,17 @@ class Tb_Lancamento extends CI_Model {
     } else {
       foreach($arrRs as $rs1){
         $query2 = $this->db->query(<<<SQL
-           SELECT bdp_descricao, bdp_contabiliza
+           SELECT bdp_descricao, bdp_contabiliza, ld_valor
            FROM tb_base_despesa
            INNER JOIN tb_lancamento_despesa ON (ld_bdp_id = bdp_id)
            WHERE ld_lan_id = {$rs1["lan_id"]}
         SQL);
         $arrRs2 = $query2->result_array();
         $arrCategoria = [];
+        $arrSpanValor = [];
         foreach($arrRs2 as $rs2){
           $arrCategoria[] = $rs2["bdp_descricao"];
+          $arrSpanValor[] = $rs2["bdp_descricao"] . ":" . CURRENCY_SYMBOL . " " . number_format($rs2["ld_valor"], 2, ",", ".");
 
           if($rs2["bdp_contabiliza"] == 1){
             if($rs1["tipo"] == "Despesa"){
@@ -201,6 +203,11 @@ class Tb_Lancamento extends CI_Model {
             $spnLanVcto = "<span style='text-decoration: underline' title='Dt Compra: $lanCompra'>$spnLanVcto</span>";
         }
 
+        $spnValor = $lanValor;
+        if (count($arrSpanValor) > 1) {
+          $spnValor = "<span style='text-decoration: underline' title='" . implode("\n", $arrSpanValor) . "'>$lanValor</span>";
+        }
+
         $htmlTable .= "<tr>";
         $htmlTable .= "  <td><input type='checkbox' name='ckbLancamentos' value='$lanId' /></td>";
         $htmlTable .= "  <td><span style='$cssColor'>$lanId</span></td>";
@@ -208,7 +215,7 @@ class Tb_Lancamento extends CI_Model {
         $htmlTable .= "  <td>$tipo</td>";
         $htmlTable .= "  <td>$parcNr</td>";
         $htmlTable .= "  <td>$spnLanVcto</td>";
-        $htmlTable .= "  <td>$lanValor</td>";
+        $htmlTable .= "  <td>$spnValor</td>";
         $htmlTable .= "  <td>$despesa</td>";
         $htmlTable .= "  <td>$lanPgto</td>";
         $htmlTable .= "  <td>$lanVlrPg</td>";
@@ -564,7 +571,7 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $this->load->database();
-    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_parcela, lan_vencimento, lan_valor, GROUP_CONCAT(bdp_id) AS categoria, GROUP_CONCAT(bdp_descricao) AS bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao, lan_confirmado");
+    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_parcela, lan_compra, lan_vencimento, lan_valor, GROUP_CONCAT(bdp_id) AS categoria, GROUP_CONCAT(bdp_descricao) AS bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao, lan_confirmado");
     $this->db->from("tb_lancamento");
     $this->db->join("tb_lancamento_despesa", "ld_lan_id = lan_id", "left");
     $this->db->join("tb_base_despesa", "bdp_id = ld_bdp_id", "left");
@@ -572,6 +579,7 @@ class Tb_Lancamento extends CI_Model {
     $this->db->where("lan_id", $lanId);
     $this->db->group_by('lan_id');
     $query = $this->db->get();
+    $this->db->reset_query();
 
     if($query->num_rows() > 0){
       $row = $query->row();
@@ -609,6 +617,20 @@ class Tb_Lancamento extends CI_Model {
       $arrLancamentoDados["con_sigla"]      = $row->con_sigla;
       $arrLancamentoDados["lan_observacao"] = $row->lan_observacao;
       $arrLancamentoDados["lan_confirmado"] = $row->lan_confirmado;
+
+      $arrLancamentoDados["ld_bdp_id"] = [];
+      $arrLancamentoDados["ld_valor"]  = [];
+
+      // categorias
+      $this->db->select("ld_bdp_id, ld_valor");
+      $this->db->from("tb_lancamento_despesa");
+      $this->db->where("ld_lan_id", $row->lan_id);
+      $this->db->order_by('ld_id');
+      $query2 = $this->db->get();
+      foreach ($query2->result() as $row) {
+        $arrLancamentoDados["ld_bdp_id"][] = $row->ld_bdp_id;
+        $arrLancamentoDados["ld_valor"][]  = $row->ld_valor;
+      }
 
       $arrRet["arrLancamentoDados"] = $arrLancamentoDados;
     }
@@ -683,6 +705,13 @@ class Tb_Lancamento extends CI_Model {
       }
     }
 
+    $arrCategorias = isset($arrLancamentoDados["ld_bdp_id"]) ? $arrLancamentoDados["ld_bdp_id"]: [];
+    if (empty($arrCategorias)) {
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe pelo menos uma categoria!";
+      return $arrRet;
+    }
+
     $arrRet["erro"] = false;
     $arrRet["msg"]  = "";
     return $arrRet;
@@ -700,6 +729,7 @@ class Tb_Lancamento extends CI_Model {
 
     $this->load->database();
     $this->load->helpers("utils");
+    $this->load->model('Tb_Lancamento_Despesa');
     $this->db->trans_start();
 
     $vDespesa    = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: null;
@@ -713,6 +743,9 @@ class Tb_Lancamento extends CI_Model {
     $vConta      = isset($arrLancamentoDados["lan_conta"]) && $arrLancamentoDados["lan_conta"] > 0 ? $arrLancamentoDados["lan_conta"]: null;
     $vObservacao = isset($arrLancamentoDados["lan_observacao"]) ? $arrLancamentoDados["lan_observacao"]: null;
     $vConfirmado = isset($arrLancamentoDados["lan_confirmado"]) ? $arrLancamentoDados["lan_confirmado"]: 0;
+
+    $vArrCategorias = isset($arrLancamentoDados["ld_bdp_id"]) ? $arrLancamentoDados["ld_bdp_id"]: [];
+    $vArrCategoriasVlr = isset($arrLancamentoDados["ld_valor"]) ? $arrLancamentoDados["ld_valor"]: [];
 
     $data = array(
       'lan_despesa'    => $vDespesa,
@@ -740,6 +773,19 @@ class Tb_Lancamento extends CI_Model {
 
       $this->db->insert('tb_lancamento', $data);
       $lastInsertdId = $this->db->insert_id();
+
+      // insere categorias
+      for ($i=0; $i < count($vArrCategorias); $i++) {
+        if (!isset($vArrCategorias[$i]) || !isset($vArrCategoriasVlr[$i])) {
+          continue;
+        }
+
+        $this->Tb_Lancamento_Despesa->insert([
+          'ld_lan_id' => $lastInsertdId,
+          'ld_bdp_id' => $vArrCategorias[$i],
+          'ld_valor'  => $vArrCategoriasVlr[$i],
+        ]);
+      }
 
       // configura proximo vencimento
       $arrData = explode("-", $data["lan_vencimento"]);
@@ -853,6 +899,13 @@ class Tb_Lancamento extends CI_Model {
       }
     }
 
+    $arrCategorias = isset($arrLancamentoDados["ld_bdp_id"]) ? $arrLancamentoDados["ld_bdp_id"]: [];
+    if (empty($arrCategorias)) {
+      $arrRet["erro"] = true;
+      $arrRet["msg"]  = "Por favor, informe pelo menos uma categoria!";
+      return $arrRet;
+    }
+
     $arrRet["erro"] = false;
     $arrRet["msg"]  = "";
     return $arrRet;
@@ -869,6 +922,7 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $this->load->database();
+    $this->load->model('Tb_Lancamento_Despesa');
 
     $vLanId      = (isset($arrLancamentoDados["lan_id"])) ? $arrLancamentoDados["lan_id"]: "";
     $vDespesa    = isset($arrLancamentoDados["lan_despesa"]) ? $arrLancamentoDados["lan_despesa"]: null;
@@ -882,6 +936,9 @@ class Tb_Lancamento extends CI_Model {
     $vConta      = isset($arrLancamentoDados["lan_conta"]) && $arrLancamentoDados["lan_conta"] > 0 ? $arrLancamentoDados["lan_conta"]: null;
     $vObservacao = isset($arrLancamentoDados["lan_observacao"]) ? $arrLancamentoDados["lan_observacao"]: null;
     $vConfirmado = isset($arrLancamentoDados["lan_confirmado"]) ? $arrLancamentoDados["lan_confirmado"]: 0;
+
+    $vArrCategorias = isset($arrLancamentoDados["ld_bdp_id"]) ? $arrLancamentoDados["ld_bdp_id"]: [];
+    $vArrCategoriasVlr = isset($arrLancamentoDados["ld_valor"]) ? $arrLancamentoDados["ld_valor"]: [];
 
     $Lancamento = [];
     $Lancamento["lan_id"]         = $vLanId;
@@ -903,6 +960,25 @@ class Tb_Lancamento extends CI_Model {
       $arrRet["erro"] = true;
       $arrRet["msg"]  = $this->db->_error_message();
     } else {
+
+      // deleta categorias
+      $this->db->reset_query();
+      $this->db->where('ld_lan_id', $vLanId);
+      $this->db->delete('tb_lancamento_despesa');
+
+      // insere categorias
+      for ($i=0; $i < count($vArrCategorias); $i++) {
+        if (!isset($vArrCategorias[$i]) || !isset($vArrCategoriasVlr[$i])) {
+          continue;
+        }
+
+        $this->Tb_Lancamento_Despesa->insert([
+          'ld_lan_id' => $vLanId,
+          'ld_bdp_id' => $vArrCategorias[$i],
+          'ld_valor'  => $vArrCategoriasVlr[$i],
+        ]);
+      }
+
       $arrRet["erro"] = false;
       $arrRet["msg"]  = "Lancamento editado com sucesso!";
     }
@@ -922,6 +998,12 @@ class Tb_Lancamento extends CI_Model {
       return $arrRet;
     } else {
       $this->load->database();
+
+      // deleta categorias
+      $this->db->where('ld_lan_id', $lanId);
+      $this->db->delete('tb_lancamento_despesa');
+
+      $this->db->reset_query();
       $this->db->where('lan_id', $lanId);
       $retDelete = $this->db->delete('tb_lancamento');
 
@@ -995,15 +1077,10 @@ class Tb_Lancamento extends CI_Model {
     $LancamentoDe["lan_valor_pago"] = $vValor;
     $LancamentoDe["lan_conta"]      = $vContaPara;
     $LancamentoDe["lan_observacao"] = "";
+    $LancamentoDe["ld_bdp_id"]      = [40];
+    $LancamentoDe["ld_valor"]       = [$LancamentoDe["lan_valor"]];
 
-    $retInsert = $this->insert($LancamentoDe);
-    if(isset($retInsert["lan_id"]) && $retInsert["lan_id"] > 0){
-      $this->Tb_Lancamento_Despesa->insert([
-        'ld_lan_id' => $retInsert["lan_id"],
-        'ld_bdp_id' => 40,
-        'ld_valor'  => $LancamentoDe["lan_valor"],
-      ]);
-    }
+    $this->insert($LancamentoDe);
     // =============
 
     // lancamento PARA
@@ -1016,15 +1093,10 @@ class Tb_Lancamento extends CI_Model {
     $LancamentoPara["lan_valor_pago"] = "-" . $vValor;
     $LancamentoPara["lan_conta"]      = $vContaDe;
     $LancamentoPara["lan_observacao"] = "";
+    $LancamentoPara["ld_bdp_id"]      = [40];
+    $LancamentoPara["ld_valor"]       = [$LancamentoPara["lan_valor"]];
 
-    $retInsert = $this->insert($LancamentoPara);
-    if(isset($retInsert["lan_id"]) && $retInsert["lan_id"] > 0){
-      $this->Tb_Lancamento_Despesa->insert([
-        'ld_lan_id' => $retInsert["lan_id"],
-        'ld_bdp_id' => 40,
-        'ld_valor'  => $LancamentoPara["lan_valor"],
-      ]);
-    }
+    $this->insert($LancamentoPara);
     // ===============
 
     $arrRet["erro"] = false;
