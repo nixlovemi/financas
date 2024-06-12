@@ -728,9 +728,10 @@ class Tb_Lancamento extends CI_Model {
       'lan_confirmado' => $vConfirmado,
     );
 
-    $vezes       = (is_numeric($repeteMeses) && $repeteMeses > 0) ? (1 + $repeteMeses): 1;
-    $arrData     = explode("-", $data["lan_vencimento"]);
+    $vezes = (is_numeric($repeteMeses) && $repeteMeses > 0) ? (1 + $repeteMeses): 1;
+    $arrData = explode("-", $data["lan_vencimento"]);
     $diaOriginal = str_pad($arrData[2], 2, "0", STR_PAD_LEFT);
+    $lastInsertdId = 0;
 
     for($i=1; $i<=$vezes;$i++){
       if($vezes > 1){
@@ -738,6 +739,7 @@ class Tb_Lancamento extends CI_Model {
       }
 
       $this->db->insert('tb_lancamento', $data);
+      $lastInsertdId = $this->db->insert_id();
 
       // configura proximo vencimento
       $arrData = explode("-", $data["lan_vencimento"]);
@@ -767,11 +769,13 @@ class Tb_Lancamento extends CI_Model {
     $this->db->trans_complete();
     $retInsert = $this->db->trans_status();
     if(!$retInsert){
+      $arrRet["lan_id"] = null;
       $arrRet["erro"] = true;
       $arrRet["msg"]  = $this->db->_error_message();
     } else {
+      $arrRet["lan_id"] = $lastInsertdId;
       $arrRet["erro"] = false;
-      $arrRet["msg"]  = "Lançamento inserido com sucesso!";
+      $arrRet["msg"] = "Lançamento inserido com sucesso!";
     }
 
     return $arrRet;
@@ -973,6 +977,7 @@ class Tb_Lancamento extends CI_Model {
       return $arrRet;
     }
 
+    $this->load->model("Tb_Lancamento_Despesa");
     $this->load->model("Tb_Conta");
     $retContaDe  = $this->Tb_Conta->getConta($vContaDe);
     $ContaDescDe = ($retContaDe["erro"]) ? $vContaDe: $retContaDe["arrContaDados"]["con_sigla"];
@@ -984,7 +989,6 @@ class Tb_Lancamento extends CI_Model {
     $LancamentoDe = [];
     $LancamentoDe["lan_despesa"]    = "Transf. De $ContaDescDe";
     $LancamentoDe["lan_tipo"]       = "T";
-    // transferencia (id 40) - add tabela TODO
     $LancamentoDe["lan_vencimento"] = $vVencimento;
     $LancamentoDe["lan_valor"]      = $vValor;
     $LancamentoDe["lan_pagamento"]  = $vVencimento;
@@ -992,14 +996,20 @@ class Tb_Lancamento extends CI_Model {
     $LancamentoDe["lan_conta"]      = $vContaPara;
     $LancamentoDe["lan_observacao"] = "";
 
-    $this->insert($LancamentoDe);
+    $retInsert = $this->insert($LancamentoDe);
+    if(isset($retInsert["lan_id"]) && $retInsert["lan_id"] > 0){
+      $this->Tb_Lancamento_Despesa->insert([
+        'ld_lan_id' => $retInsert["lan_id"],
+        'ld_bdp_id' => 40,
+        'ld_valor'  => $LancamentoDe["lan_valor"],
+      ]);
+    }
     // =============
 
     // lancamento PARA
     $LancamentoPara = [];
     $LancamentoPara["lan_despesa"]    = "Transf. Para $ContaDescPara";
     $LancamentoPara["lan_tipo"]       = "T";
-    // transferencia (id 40) - add tabela TODO
     $LancamentoPara["lan_vencimento"] = $vVencimento;
     $LancamentoPara["lan_valor"]      = "-" . $vValor;
     $LancamentoPara["lan_pagamento"]  = $vVencimento;
@@ -1007,11 +1017,18 @@ class Tb_Lancamento extends CI_Model {
     $LancamentoPara["lan_conta"]      = $vContaDe;
     $LancamentoPara["lan_observacao"] = "";
 
-    $this->insert($LancamentoPara);
+    $retInsert = $this->insert($LancamentoPara);
+    if(isset($retInsert["lan_id"]) && $retInsert["lan_id"] > 0){
+      $this->Tb_Lancamento_Despesa->insert([
+        'ld_lan_id' => $retInsert["lan_id"],
+        'ld_bdp_id' => 40,
+        'ld_valor'  => $LancamentoPara["lan_valor"],
+      ]);
+    }
     // ===============
 
     $arrRet["erro"] = false;
-    $arrRet["msg"]  = "";
+    $arrRet["msg"] = "";
     return $arrRet;
   }
 
