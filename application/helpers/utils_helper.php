@@ -378,7 +378,7 @@ function getLatDay($date = '2018-01-01')
 
 function formatMoney($value)
 {
-  return "R$ ".number_format($value, 2, ",", ".");
+  return "$ ".number_format($value, 2, ",", ".");
 }
 
 function formatMoney2($value)

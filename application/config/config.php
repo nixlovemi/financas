@@ -23,17 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-/*$client  = @$_SERVER['HTTP_CLIENT_IP'];
-$forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
-$remote  = $_SERVER['REMOTE_ADDR'];
-if (filter_var($client, FILTER_VALIDATE_IP)) {
-  $ip = $client;
-} elseif (filter_var($forward, FILTER_VALIDATE_IP)) {
-  $ip = $forward;
-} else {
-  $ip = $remote;
-}*/
-$config['base_url'] = "http://crochepassoapasso.com.br/financas/";
+$config['base_url'] = getenv('BASE_URL');
 
 /*
 |--------------------------------------------------------------------------
@@ -99,7 +89,7 @@ $config['language']	= 'english';
 | See http://php.net/htmlspecialchars for a list of supported charsets.
 |
 */
-$config['charset'] = 'UTF-8';
+$config['charset'] = getenv('CHARSET');
 
 /*
 |--------------------------------------------------------------------------
@@ -244,7 +234,7 @@ $config['log_threshold'] = 0;
 | application/logs/ directory. Use a full server path with trailing slash.
 |
 */
-$config['log_path'] = '';
+$config['log_path'] = getenv('LOG_PATH');
 
 /*
 |--------------------------------------------------------------------------
@@ -390,7 +380,7 @@ $config['encryption_key'] = '';
 $config['sess_driver'] = 'files';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_expiration'] = 7200;
-$config['sess_save_path'] = NULL;
+$config['sess_save_path'] = APP_PATH . '/application/cache';
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;
 $config['sess_regenerate_destroy'] = FALSE;

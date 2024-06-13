@@ -101,7 +101,6 @@ class Tb_Conta extends CI_Model {
       ,(SELECT ROUND(COALESCE(SUM(lan_valor_pago), 0), 2) FROM tb_lancamento WHERE lan_conta = con_id AND lan_tipo = 'T' AND lan_pagamento >= '$dtBase' AND lan_pagamento <= '$dataFinal') AS transferencias_mes
     ");
     $this->db->from("tb_conta");
-    $this->db->where("con_ativo", 1);
     $this->db->order_by("con_nome", "asc");
     $query = $this->db->get();
 
@@ -121,8 +120,14 @@ class Tb_Conta extends CI_Model {
         $arrContas["transferencias"]     = $rs1["transferencias"];
         $arrContas["transferencias_mes"] = $rs1["transferencias_mes"];
         $arrContas["saldo"]              = ($rs1["con_saldo_inicial"] + $rs1["receitas"] + $rs1["transferencias"]) - $rs1["despesas"];
+        
+        $hasBalance = round($arrContas["saldo"], 2) <> 0;
+        $hadTransaction = ($rs1["receitas_mes"] <> 0) || ($rs1["transferencias_mes"] <> 0) || ($rs1["despesas_mes"] <> 0);
+        if (!($hadTransaction || $hasBalance)) {
+        	continue;
+        }
 
-        $arrRet["arrContas"][] = $arrContas;
+        $arrRet["arrContas"][$rs1["con_id"]] = $arrContas;
       }
     }
 
@@ -401,11 +406,67 @@ class Tb_Conta extends CI_Model {
         $html .= "  </thead>";
         $html .= "  <tbody>";
 
+        $totSaldoIni = 0;
         $totReceita = 0;
         $totDespesa = 0;
-        $totTransf  = 0;
-        $totSaldo   = 0;
+        $totTransf = 0;
+        $totSaldo = 0;
 
+        foreach ($arrContas as $i => $Conta) {
+            $contaDtSaldo = $Conta["con_data_saldo"];
+            $contaDesc    = $Conta["con_nome"];
+            $contaSigla   = $Conta["con_sigla"];
+            $contaSaldo   = $Conta["saldo"];
+            $receitasMes  = $Conta["receitas_mes"];
+            $despesasMes  = $Conta["despesas_mes"];
+            $trasnfMes    = $Conta["transferencias_mes"];
+            $saldoInicial = $arrRetSaldoAnterior["arrContas"][$Conta["con_id"]]["saldo"] ?? 0;
+
+            if($ano . "-" . $mes . "-01" < $contaDtSaldo){
+                $contaSaldo = 0;
+                $saldoInicial = 0;
+            }
+
+            $totReceita += $receitasMes;
+            $totDespesa += $despesasMes;
+            $totTransf += $trasnfMes;
+            $totSaldo += $contaSaldo;
+            $totSaldoIni += $saldoInicial;
+
+            $strSaldo      = is_numeric($contaSaldo) ? CURRENCY_SYMBOL . number_format($contaSaldo, 2, ",", "."): "-";
+            $strReceitaMes = is_numeric($receitasMes) ? CURRENCY_SYMBOL . number_format($receitasMes, 2, ",", "."): "-";
+            $strDespesaMes = is_numeric($despesasMes) ? CURRENCY_SYMBOL . number_format($despesasMes, 2, ",", "."): "-";
+            $strTransfMes  = is_numeric($trasnfMes) ? CURRENCY_SYMBOL . number_format($trasnfMes, 2, ",", "."): "-";
+            $strSaldoIni   = is_numeric($saldoInicial) ? CURRENCY_SYMBOL . number_format($saldoInicial, 2, ",", "."): "-";
+
+            $html .= "  <tr>";
+            $html .= "    <td>$contaDesc</td>";
+            $html .= "    <td>$contaSigla</td>";
+            $html .= "    <td>$strSaldoIni</td>";
+            $html .= "    <td>$strReceitaMes</td>";
+            $html .= "    <td>$strDespesaMes</td>";
+            $html .= "    <td>$strTransfMes</td>";
+            $html .= "    <td>$strSaldo</td>";
+            $html .= "  </tr>";
+
+            $arrReturn[] = array(
+                "contaDesc"     => $contaDesc,
+                "contaSigla"    => $contaSigla,
+                "strSaldoIni"   => $strSaldoIni,
+                "saldoIni"      => $saldoInicial,
+                "totSaldoIni"   => $totSaldoIni,
+                "strReceitaMes" => $strReceitaMes,
+                "receitaMes"    => $receitasMes,
+                "strDespesaMes" => $strDespesaMes,
+                "despesaMes"    => $despesasMes,
+                "strTransfMes"  => $strTransfMes,
+                "strTransfMes"  => $trasnfMes,
+                "strSaldo"      => $strSaldo,
+                "saldo"         => $contaSaldo,
+            );
+        }
+
+        /*
         for($i=0; $i<count($arrContas); $i++){
           $Conta = $arrContas[$i];
 
@@ -416,7 +477,7 @@ class Tb_Conta extends CI_Model {
           $receitasMes  = $Conta["receitas_mes"];
           $despesasMes  = $Conta["despesas_mes"];
           $trasnfMes    = $Conta["transferencias_mes"];
-          $saldoInicial = $arrRetSaldoAnterior["arrContas"][$i]["saldo"];
+          $saldoInicial = $arrRetSaldoAnterior["arrContas"][$Conta["con_id"]]["saldo"] ?? 0;
 
           if($ano . "-" . $mes . "-01" < $contaDtSaldo){
             $contaSaldo = 0;
@@ -425,14 +486,15 @@ class Tb_Conta extends CI_Model {
 
           $totReceita += $receitasMes;
           $totDespesa += $despesasMes;
-          $totTransf  += $trasnfMes;
-          $totSaldo   += $contaSaldo;
+          $totTransf += $trasnfMes;
+          $totSaldo += $contaSaldo;
+          $totSaldoIni += $saldoInicial;
 
-          $strSaldo      = is_numeric($contaSaldo) ? "R$" . number_format($contaSaldo, 2, ",", "."): "-";
-          $strReceitaMes = is_numeric($receitasMes) ? "R$" . number_format($receitasMes, 2, ",", "."): "-";
-          $strDespesaMes = is_numeric($despesasMes) ? "R$" . number_format($despesasMes, 2, ",", "."): "-";
-          $strTransfMes  = is_numeric($trasnfMes) ? "R$" . number_format($trasnfMes, 2, ",", "."): "-";
-          $strSaldoIni   = is_numeric($saldoInicial) ? "R$" . number_format($saldoInicial, 2, ",", "."): "-";
+          $strSaldo      = is_numeric($contaSaldo) ? "$" . number_format($contaSaldo, 2, ",", "."): "-";
+          $strReceitaMes = is_numeric($receitasMes) ? "$" . number_format($receitasMes, 2, ",", "."): "-";
+          $strDespesaMes = is_numeric($despesasMes) ? "$" . number_format($despesasMes, 2, ",", "."): "-";
+          $strTransfMes  = is_numeric($trasnfMes) ? "$" . number_format($trasnfMes, 2, ",", "."): "-";
+          $strSaldoIni   = is_numeric($saldoInicial) ? "$" . number_format($saldoInicial, 2, ",", "."): "-";
 
           $html .= "  <tr>";
           $html .= "    <td>$contaDesc</td>";
@@ -449,6 +511,7 @@ class Tb_Conta extends CI_Model {
             "contaSigla"    => $contaSigla,
             "strSaldoIni"   => $strSaldoIni,
             "saldoIni"      => $saldoInicial,
+            "totSaldoIni"   => $totSaldoIni,
             "strReceitaMes" => $strReceitaMes,
             "receitaMes"    => $receitasMes,
             "strDespesaMes" => $strDespesaMes,
@@ -459,14 +522,17 @@ class Tb_Conta extends CI_Model {
             "saldo"         => $contaSaldo,
           );
         }
+        */
 
-        $strTotReceita = "R$" . number_format($totReceita, 2, ",", ".");
-        $strTotDespesa = "R$" . number_format($totDespesa, 2, ",", ".");
-        $strTotTransf  = "R$" . number_format($totTransf, 2, ",", ".");
-        $strTotSaldo   = "R$" . number_format($totSaldo, 2, ",", ".");
+        $strTotSaldoIni = CURRENCY_SYMBOL . number_format($totSaldoIni, 2, ",", ".");
+        $strTotReceita = CURRENCY_SYMBOL . number_format($totReceita, 2, ",", ".");
+        $strTotDespesa = CURRENCY_SYMBOL . number_format($totDespesa, 2, ",", ".");
+        $strTotTransf = CURRENCY_SYMBOL . number_format($totTransf, 2, ",", ".");
+        $strTotSaldo = CURRENCY_SYMBOL . number_format($totSaldo, 2, ",", ".");
 
         $html .= "    <tr style='font-weight:bold'>";
-        $html .= "      <td align='center' colspan='3'>TOTAIS</td>";
+        $html .= "      <td align='center' colspan='2'>TOTAIS</td>";
+        $html .= "      <td>$strTotSaldoIni</td>";
         $html .= "      <td>$strTotReceita</td>";
         $html .= "      <td>$strTotDespesa</td>";
         $html .= "      <td>$strTotTransf</td>";

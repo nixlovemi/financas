@@ -20,7 +20,7 @@
         <div class="controls">
           <input placeholder="Data Saldo" value="<?php echo date('d/m/Y'); ?>" class="mask_datepicker span3 m-wrap" type="text" id="cxaDataSaldo" name="cxaDataSaldo" />
           <div class="input-prepend">
-            <span class="add-on">R$</span>
+            <span class="add-on"><?=CURRENCY_SYMBOL?></span>
             <input placeholder="Valor Saldo" value="0,00" class="mask_moeda span3 m-wrap" type="text" id="cxaVlrSaldo" name="cxaVlrSaldo" />
           </div>
         </div>

@@ -194,7 +194,7 @@ class Rest extends CI_Controller {
 
     $this->load->model('Tb_Conta');
     $ret = $this->Tb_Conta->getHtmlSaldoContas($mes, $ano, true);
-
+    
     echo json_encode($ret);
   }
   // ===============
@@ -232,7 +232,6 @@ class Rest extends CI_Controller {
     $Lancamento["lan_parcela"]    = $parcela;
     $Lancamento["lan_vencimento"] = $vencimento;
     $Lancamento["lan_valor"]      = $valor;
-    $Lancamento["lan_categoria"]  = $categoria;
     $Lancamento["lan_pagamento"]  = $pagamento;
     $Lancamento["lan_valor_pago"] = $valor_pago;
     $Lancamento["lan_conta"]      = $conta;
@@ -266,7 +265,6 @@ class Rest extends CI_Controller {
     $Lancamento["lan_tipo"]       = $tipo;
     $Lancamento["lan_vencimento"] = $vencimento;
     $Lancamento["lan_valor"]      = $valor;
-    $Lancamento["lan_categoria"]  = $categoria;
     $Lancamento["lan_pagamento"]  = $pagamento;
     $Lancamento["lan_valor_pago"] = $valor_pago;
     $Lancamento["lan_conta"]      = $conta;

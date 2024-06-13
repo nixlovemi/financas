@@ -57,8 +57,8 @@ $arrInvestimento = isset($arrRetGastos["arrInvestimento"]) ? $arrRetGastos["arrI
 
                       $idCategoria  = $rs1["idCategoria"];
                       $categoria    = $rs1["categoria"];
-                      $vlrPrevisto  = "R$".number_format($previsto, 2, ",", ".");
-                      $vlrRealizado = "R$".number_format($realizado, 2, ",", ".");
+                      $vlrPrevisto  = CURRENCY_SYMBOL.number_format($previsto, 2, ",", ".");
+                      $vlrRealizado = CURRENCY_SYMBOL.number_format($realizado, 2, ",", ".");
 
                       $html .= "<tr>";
                       $html .= "  <td>$categoria</td>";
@@ -94,18 +94,18 @@ $arrInvestimento = isset($arrRetGastos["arrInvestimento"]) ? $arrRetGastos["arrI
                     ?>
                     <tr>
                       <td><?php echo $titulo; ?></td>
-                      <td width="18%">R$ <span id="totaisPrev<?php echo $titulo; ?>"></span></td>
-                      <td width="18%">R$ <span id="totaisRealiz<?php echo $titulo; ?>"><?php echo number_format($arrTotaisRealiz[$titulo], 2, ",", "."); ?></span></td>
-                      <td width="18%">R$ <span id="totaisDif<?php echo $titulo; ?>"></span></td>
+                      <td width="18%"><?=CURRENCY_SYMBOL?> <span id="totaisPrev<?php echo $titulo; ?>"></span></td>
+                      <td width="18%"><?=CURRENCY_SYMBOL?> <span id="totaisRealiz<?php echo $titulo; ?>"><?php echo number_format($arrTotaisRealiz[$titulo], 2, ",", "."); ?></span></td>
+                      <td width="18%"><?=CURRENCY_SYMBOL?> <span id="totaisDif<?php echo $titulo; ?>"></span></td>
                     </tr>
                     <?php
                   }
                   ?>
                   <tr>
                     <td><b>TOTAIS</b></td>
-                    <td width="18%">R$ <span id="totGeralPrev"></span></td>
-                    <td width="18%">R$ <span id="totGeralRealiz"></span></td>
-                    <td width="18%">R$ <span id="totGeralDif"></span></td>
+                    <td width="18%"><?=CURRENCY_SYMBOL?> <span id="totGeralPrev"></span></td>
+                    <td width="18%"><?=CURRENCY_SYMBOL?> <span id="totGeralRealiz"></span></td>
+                    <td width="18%"><?=CURRENCY_SYMBOL?> <span id="totGeralDif"></span></td>
                   </tr>
                 </tbody>
               </table>

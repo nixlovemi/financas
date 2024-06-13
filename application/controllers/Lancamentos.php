@@ -63,9 +63,10 @@ class Lancamentos extends MY_Controller {
     $arrRet["msg"]  = "";
 
     // variaveis ============
+    $lanParcela    = ($this->input->post('lanParcela') != "") ? $this->input->post('lanParcela'): null;
     $lanDespesa    = ($this->input->post('lanDespesa') != "") ? $this->input->post('lanDespesa'): null;
     $lanTipo       = ($this->input->post('lanTipo') != "") ? $this->input->post('lanTipo'): null;
-    $lanCategoria  = ($this->input->post('lanCategoria') != "") ? $this->input->post('lanCategoria'): null;
+    $lanCompra     = (strlen($this->input->post('lanCompra')) == 10) ? acerta_data($this->input->post('lanCompra')): null;
     $lanVencimento = (strlen($this->input->post('lanVencimento')) == 10) ? acerta_data($this->input->post('lanVencimento')): null;
     $lanValor      = ($this->input->post('lanValor') != "") ? acerta_moeda($this->input->post('lanValor')): null;
     $lanPagamento  = (strlen($this->input->post('lanPagamento')) == 10) ? acerta_data($this->input->post('lanPagamento')): null;
@@ -74,12 +75,19 @@ class Lancamentos extends MY_Controller {
     $lanObservacao = ($this->input->post('lanObservacao') != "") ? $this->input->post('lanObservacao'): null;
     $lanConfirmado = ($this->input->post('lanConfirmado') != "") ? $this->input->post('lanConfirmado'): 0;
     $repeteMeses   = (is_numeric($this->input->post('repeteMeses')) && $this->input->post('repeteMeses') > 0) ? $this->input->post('repeteMeses'): null;
+
+    $arrCategorias    = (is_array($this->input->post('ldBdpId'))) ? $this->input->post('ldBdpId'): array();
+    $arrCategoriasVlr = (is_array($this->input->post('ldValor'))) ? $this->input->post('ldValor'): array();
+    foreach ($arrCategoriasVlr as &$valor) {
+      $valor = acerta_moeda($valor);
+    }
     // ======================
 
     $Lancamento = [];
+    $Lancamento["lan_parcela"]    = $lanParcela;
     $Lancamento["lan_despesa"]    = $lanDespesa;
     $Lancamento["lan_tipo"]       = $lanTipo;
-    $Lancamento["lan_categoria"]  = $lanCategoria;
+    $Lancamento["lan_compra"]     = $lanCompra;
     $Lancamento["lan_vencimento"] = $lanVencimento;
     $Lancamento["lan_valor"]      = $lanValor;
     $Lancamento["lan_pagamento"]  = $lanPagamento;
@@ -87,6 +95,8 @@ class Lancamentos extends MY_Controller {
     $Lancamento["lan_conta"]      = $lanConta;
     $Lancamento["lan_observacao"] = $lanObservacao;
     $Lancamento["lan_confirmado"] = $lanConfirmado;
+    $Lancamento["ld_bdp_id"]      = $arrCategorias;
+    $Lancamento["ld_valor"]       = $arrCategoriasVlr;
 
     $this->load->model('Tb_Lancamento');
     $retInsert = $this->Tb_Lancamento->insert($Lancamento, $repeteMeses);
@@ -260,9 +270,10 @@ class Lancamentos extends MY_Controller {
 
     // variaveis ============
     $lanId         = $this->input->post('lanId') > 0 ? $this->input->post('lanId'): -1;
+    $lanParcela    = ($this->input->post('lanParcela') != "") ? $this->input->post('lanParcela'): null;
     $lanDespesa    = ($this->input->post('lanDespesa') != "") ? $this->input->post('lanDespesa'): null;
     $lanTipo       = ($this->input->post('lanTipo') != "") ? $this->input->post('lanTipo'): null;
-    $lanCategoria  = ($this->input->post('lanCategoria') != "") ? $this->input->post('lanCategoria'): null;
+    $lanCompra     = (strlen($this->input->post('lanCompra')) == 10) ? acerta_data($this->input->post('lanCompra')): null;
     $lanVencimento = (strlen($this->input->post('lanVencimento')) == 10) ? acerta_data($this->input->post('lanVencimento')): null;
     $lanValor      = ($this->input->post('lanValor') != "") ? acerta_moeda($this->input->post('lanValor')): null;
     $lanPagamento  = (strlen($this->input->post('lanPagamento')) == 10) ? acerta_data($this->input->post('lanPagamento')): null;
@@ -270,6 +281,12 @@ class Lancamentos extends MY_Controller {
     $lanConta      = ($this->input->post('lanConta') != "") ? $this->input->post('lanConta'): null;
     $lanObservacao = ($this->input->post('lanObservacao') != "") ? $this->input->post('lanObservacao'): null;
     $lanConfirmado = ($this->input->post('lanConfirmado') != "") ? $this->input->post('lanConfirmado'): 0;
+
+    $arrCategorias    = (is_array($this->input->post('ldBdpId'))) ? $this->input->post('ldBdpId'): array();
+    $arrCategoriasVlr = (is_array($this->input->post('ldValor'))) ? $this->input->post('ldValor'): array();
+    foreach ($arrCategoriasVlr as &$valor) {
+      $valor = acerta_moeda($valor);
+    }
     // ======================
 
     $this->load->model('Tb_Lancamento');
@@ -284,9 +301,10 @@ class Lancamentos extends MY_Controller {
       $Lancamento = $retLancamento["arrLancamentoDados"];
     }
 
+    $Lancamento["lan_parcela"]    = $lanParcela;
     $Lancamento["lan_despesa"]    = $lanDespesa;
     $Lancamento["lan_tipo"]       = $lanTipo;
-    $Lancamento["lan_categoria"]  = $lanCategoria;
+    $Lancamento["lan_compra"]     = $lanCompra;
     $Lancamento["lan_vencimento"] = $lanVencimento;
     $Lancamento["lan_valor"]      = $lanValor;
     $Lancamento["lan_pagamento"]  = $lanPagamento;
@@ -294,6 +312,8 @@ class Lancamentos extends MY_Controller {
     $Lancamento["lan_conta"]      = $lanConta;
     $Lancamento["lan_observacao"] = $lanObservacao;
     $Lancamento["lan_confirmado"] = $lanConfirmado;
+    $Lancamento["ld_bdp_id"]      = $arrCategorias;
+    $Lancamento["ld_valor"]       = $arrCategoriasVlr;
 
     $retUpdate = $this->Tb_Lancamento->edit($Lancamento);
     if( $retUpdate["erro"] ){
@@ -431,13 +451,20 @@ class Lancamentos extends MY_Controller {
       $this->load->helpers("alerts");
       $arrRet["html"] = showWarning("Nenhum lan&ccedil;amento selecionado!");
     } else {
+      $arrLanIdFiltered = [];
+      foreach($arrLanId as $lanId){
+        if(is_numeric($lanId)) {
+            $arrLanIdFiltered[] = $lanId;
+        }
+      }
+
       $this->load->model("Tb_Conta");
       $retContas = $this->Tb_Conta->getContas();
       $arrContas = ($retContas["erro"] == false) ? $retContas["arrContas"]: array();
       $data["arrContas"] = $arrContas;
 
       $this->load->model("Tb_Lancamento");
-      $retHtmlLcto      = $this->Tb_Lancamento->getHtmlBaixaGrupo($arrLanId);
+      $retHtmlLcto      = $this->Tb_Lancamento->getHtmlBaixaGrupo($arrLanIdFiltered);
       $data["htmlLcto"] = $retHtmlLcto;
 
       $data["strLanIds"] = $strLanIds;
@@ -508,13 +535,20 @@ class Lancamentos extends MY_Controller {
       $this->load->helpers("alerts");
       $arrRet["html"] = showWarning("Nenhum lan&ccedil;amento selecionado!");
     } else {
+      $arrLanIdFiltered = [];
+      foreach($arrLanId as $lanId){
+        if(is_numeric($lanId)) {
+            $arrLanIdFiltered[] = $lanId;
+        }
+      }
+
       $this->load->model("Tb_Conta");
       $retContas = $this->Tb_Conta->getContas();
       $arrContas = ($retContas["erro"] == false) ? $retContas["arrContas"]: array();
       $data["arrContas"] = $arrContas;
 
       $this->load->model("Tb_Lancamento");
-      $retHtmlLcto      = $this->Tb_Lancamento->getHtmlBaixaGrupo($arrLanId);
+      $retHtmlLcto      = $this->Tb_Lancamento->getHtmlBaixaGrupo($arrLanIdFiltered);
       $data["htmlLcto"] = $retHtmlLcto;
 
       $data["strLanIds"] = $strLanIds;
@@ -595,6 +629,7 @@ class Lancamentos extends MY_Controller {
         $html .= "    <td>Tipo</td>";
         $html .= "    <td>Categoria</td>";
         $html .= "    <td>Parcela</td>";
+        $html .= "    <td>Dt Compra</td>";
         $html .= "    <td>Vencimento</td>";
         $html .= "    <td>Valor</td>";
         $html .= "    <td>Pagamento</td>";
@@ -606,6 +641,7 @@ class Lancamentos extends MY_Controller {
           $tipo       = $rs["tipo"] ?? "";
           $categoria  = $rs["despesa"] ?? "";
           $parcela    = $rs["parcNr"] ?? "";
+          $compra     = $rs["lanCompra"] ?? "";
           $vencimento = $rs["lanVcto"] ?? "";
           $valor      = $rs["lanValor"] ?? "";
           $pagamento  = $rs["lanPgto"] ?? "";
@@ -613,15 +649,16 @@ class Lancamentos extends MY_Controller {
           $conta      = $rs["conta"] ?? "";
 
           $html .= "<tr>";
-          $html .= "  <td>$despesa</td>";
-          $html .= "  <td>$tipo</td>";
-          $html .= "  <td>$categoria</td>";
-          $html .= "  <td>$parcela</td>";
+          $html .= "  <td>".utf8_decode($despesa)."</td>";
+          $html .= "  <td>".utf8_decode($tipo)."</td>";
+          $html .= "  <td>".utf8_decode($categoria)."</td>";
+          $html .= "  <td>".utf8_decode($parcela)."</td>";
+          $html .= "  <td>$compra</td>";
           $html .= "  <td>$vencimento</td>";
           $html .= "  <td>$valor</td>";
           $html .= "  <td>$pagamento</td>";
           $html .= "  <td>$valor_pago</td>";
-          $html .= "  <td>$conta</td>";
+          $html .= "  <td>".utf8_decode($conta)."</td>";
           $html .= "</tr>";
         }
         $html .= "</table>";

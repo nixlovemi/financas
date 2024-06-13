@@ -12,7 +12,7 @@ class Tb_Usuario extends CI_Model {
     $vUserEsc     = $this->db->escape_str($vUser);
     $vPasswordEsc = $this->db->escape_str(md5($vPassword));
 
-    $sql  = " SELECT * ";
+    $sql  = " SELECT usu_id, usu_nome, usu_email, usu_ativo";
     $sql .= " FROM tb_usuario ";
     $sql .= " WHERE usu_login = '$vUserEsc' ";
     $sql .= " AND usu_senha = '$vPasswordEsc' ";

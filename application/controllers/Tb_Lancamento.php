@@ -67,7 +67,7 @@ class Tb_Lancamento extends CI_Model {
     }
 
     if(is_numeric($vCategoria)){
-      $sqlFilter .= " AND lan_categoria = $vCategoria ";
+      $sqlFilter .= " AND lan_id IN (SELECT ld_lan_id FROM tb_lancamento_despesa WHERE ld_bdp_id = $vCategoria) ";
     }
 
     if($vPagas == "S"){
@@ -121,14 +121,11 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= "        , lan_parcela ";
     $vSql .= "        , lan_vencimento ";
     $vSql .= "        , lan_valor ";
-    $vSql .= "        , bdp_descricao ";
-    $vSql .= "        , bdp_contabiliza ";
     $vSql .= "        , lan_pagamento ";
     $vSql .= "        , lan_valor_pago ";
     $vSql .= "        , con_sigla ";
     $vSql .= "        , lan_confirmado ";
     $vSql .= " FROM tb_lancamento ";
-    $vSql .= " LEFT JOIN tb_base_despesa ON bdp_id = lan_categoria ";
     $vSql .= " LEFT JOIN tb_conta ON con_id = lan_conta ";
     $vSql .= " WHERE 1=1 ";
     $vSql .= " $sqlFilter ";
@@ -153,19 +150,31 @@ class Tb_Lancamento extends CI_Model {
     if(count($arrRs) <= 0){
     } else {
       foreach($arrRs as $rs1){
-        if($rs1["bdp_contabiliza"] == 1){
-          if($rs1["tipo"] == "Despesa"){
-            $totValorDesp   += $rs1["lan_valor"];
-            $totValorPgDesp += $rs1["lan_valor_pago"];
-          } else if($rs1["tipo"] == "Receita"){
-            $totValorRec   += $rs1["lan_valor"];
-            $totValorPgRec += $rs1["lan_valor_pago"];
-          }
-        } else {
-          if($rs1["tipo"] == "Despesa"){
-            $totNaoContabDesp += $rs1["lan_valor"];
-          } else if($rs1["tipo"] == "Receita"){
-            $totNaoContabRec += $rs1["lan_valor"];
+        $query2 = $this->db->query(<<<SQL
+           SELECT bdp_descricao, bdp_contabiliza
+           FROM tb_base_despesa
+           INNER JOIN tb_lancamento_despesa ON (ld_bdp_id = bdp_id)
+           WHERE ld_lan_id = {$rs1["lan_id"]}
+        SQL);
+        $arrRs2 = $query2->result_array();
+        $arrCategoria = [];
+        foreach($arrRs2 as $rs2){
+          $arrCategoria[] = $rs2["bdp_descricao"];
+
+          if($rs2["bdp_contabiliza"] == 1){
+            if($rs2["tipo"] == "Despesa"){
+              $totValorDesp   += $rs2["lan_valor"];
+              $totValorPgDesp += $rs2["lan_valor_pago"];
+            } else if($rs2["tipo"] == "Receita"){
+              $totValorRec   += $rs2["lan_valor"];
+              $totValorPgRec += $rs2["lan_valor_pago"];
+            }
+          } else {
+            if($rs2["tipo"] == "Despesa"){
+              $totNaoContabDesp += $rs2["lan_valor"];
+            } else if($rs2["tipo"] == "Receita"){
+              $totNaoContabRec += $rs2["lan_valor"];
+            }
           }
         }
 
@@ -174,10 +183,10 @@ class Tb_Lancamento extends CI_Model {
         $tipo       = $rs1["tipo"];
         $parcNr     = $rs1["lan_parcela"];
         $lanVcto    = (strlen($rs1["lan_vencimento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_vencimento"])): "";
-        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "R$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
-        $despesa    = $rs1["bdp_descricao"];
+        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
+        $despesa    = implode(", ", $arrCategoria);
         $lanPgto    = (strlen($rs1["lan_pagamento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_pagamento"])): "";
-        $lanVlrPg   = (is_numeric($rs1["lan_valor_pago"])) ? "R$ " . number_format($rs1["lan_valor_pago"], 2, ",", "."): "";
+        $lanVlrPg   = (is_numeric($rs1["lan_valor_pago"])) ? "$ " . number_format($rs1["lan_valor_pago"], 2, ",", "."): "";
         $conta      = $rs1["con_sigla"];
 
         $cssColor   = ($rs1["lan_confirmado"] == 1) ? "color:#3079ca;": "";
@@ -230,7 +239,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorRec, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totValorRec, 2, ",", ".")."</strong>
                             Total Valor (Receita)
                           </div>
                         </li>";
@@ -239,7 +248,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorPgRec, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totValorPgRec, 2, ",", ".")."</strong>
                             Total Pago (Receita)
                           </div>
                         </li>";
@@ -248,7 +257,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totNaoContabRec, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totNaoContabRec, 2, ",", ".")."</strong>
                             Total N&atilde;o Contabilizado (Receita)
                           </div>
                         </li>";
@@ -257,7 +266,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorDesp, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totValorDesp, 2, ",", ".")."</strong>
                             Total Valor (Despesa)
                           </div>
                         </li>";
@@ -266,7 +275,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totValorPgDesp, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totValorPgDesp, 2, ",", ".")."</strong>
                             Total Pago (Despesa)
                           </div>
                         </li>";
@@ -275,7 +284,7 @@ class Tb_Lancamento extends CI_Model {
                             <i style='font-size:43px;' class='icon icon-money'></i>
                           </div>
                           <div class='right'>
-                            <strong>R$".number_format($totNaoContabDesp, 2, ",", ".")."</strong>
+                            <strong>$".number_format($totNaoContabDesp, 2, ",", ".")."</strong>
                             Total N&atilde;o Contabilizado (Despesa)
                           </div>
                         </li>";
@@ -327,12 +336,14 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= "        , lan_parcela ";
     $vSql .= "        , lan_vencimento ";
     $vSql .= "        , lan_valor ";
-    $vSql .= "        , bdp_descricao ";
+    $vSql .= "        , GROUP_CONCAT(bdp_descricao) AS bdp_descricao ";
     $vSql .= " FROM tb_lancamento ";
-    $vSql .= " LEFT JOIN tb_base_despesa ON bdp_id = lan_categoria ";
-    $vSql .= " LEFT JOIN tb_conta ON con_id = lan_conta ";
+    $vSql .= " LEFT JOIN tb_lancamento_despesa ON (ld_lan_id = lan_id) ";
+    $vSql .= " LEFT JOIN tb_base_despesa ON (bdp_id = ld_bdp_id) ";
+    $vSql .= " LEFT JOIN tb_conta ON (con_id = lan_conta) ";
     $vSql .= " WHERE 1=1 ";
     $vSql .= " AND lan_id IN (" . implode(",", $arrLanId) . ")";
+    $vSql .= " GROUP BY lan_id ";
     $vSql .= " ORDER BY lan_vencimento, lan_id ";
 
     $query = $this->db->query($vSql);
@@ -349,7 +360,7 @@ class Tb_Lancamento extends CI_Model {
         $tipo       = $rs1["tipo"];
         $parcNr     = $rs1["lan_parcela"];
         $lanVcto    = (strlen($rs1["lan_vencimento"]) == 10) ? date("d/m/Y", strtotime($rs1["lan_vencimento"])): "";
-        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "R$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
+        $lanValor   = (is_numeric($rs1["lan_valor"])) ? "$ " . number_format($rs1["lan_valor"], 2, ",", "."): "";
         $despesa    = $rs1["bdp_descricao"];
 
         $htmlTable .= "<tr>";
@@ -366,7 +377,7 @@ class Tb_Lancamento extends CI_Model {
 
     $htmlTable .= "<tr>";
     $htmlTable .= "  <td colspan='5' align='right'><b>TOTAL</b></td>";
-    $htmlTable .= "  <td colspan='2'>"."R$ " . number_format($total, 2, ",", ".")."</td>";
+    $htmlTable .= "  <td colspan='2'>"."$ " . number_format($total, 2, ",", ".")."</td>";
     $htmlTable .= "</tr>";
 
     $htmlTable .= "  </tbody>";
@@ -398,8 +409,8 @@ class Tb_Lancamento extends CI_Model {
       $totRealizado += $realizado;
 
       $categoria    = $rs1["categoria"];
-      $vlrPrevisto  = "R$".number_format($previsto, 2, ",", ".");
-      $vlrRealizado = "R$".number_format($realizado, 2, ",", ".");
+      $vlrPrevisto  = CURRENCY_SYMBOL.number_format($previsto, 2, ",", ".");
+      $vlrRealizado = CURRENCY_SYMBOL.number_format($realizado, 2, ",", ".");
 
       $html .= "  <tr style='$cssRed'>";
       $html .= "    <td>$categoria</td>";
@@ -409,13 +420,13 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $html .= "    <tr>";
-    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL PREVISTO: R$".number_format($totPrevisto, 2, ",", ".")."</center></td>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL PREVISTO: ".CURRENCY_SYMBOL.number_format($totPrevisto, 2, ",", ".")."</center></td>";
     $html .= "    </tr>";
     $html .= "    <tr>";
-    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL REALIZADO: R$".number_format($totRealizado, 2, ",", ".")."</center></td>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>TOTAL REALIZADO: ".CURRENCY_SYMBOL.number_format($totRealizado, 2, ",", ".")."</center></td>";
     $html .= "    </tr>";
     $html .= "    <tr>";
-    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>DIFERENÇA: R$".number_format($totPrevisto - $totRealizado, 2, ",", ".")."</center></td>";
+    $html .= "      <td colspan='3' style='background-color:black; color:white;'><center>DIFERENÇA: ".CURRENCY_SYMBOL.number_format($totPrevisto - $totRealizado, 2, ",", ".")."</center></td>";
     $html .= "    </tr>";
     $html .= "  </tbody>";
     $html .= "</table>";
@@ -435,9 +446,10 @@ class Tb_Lancamento extends CI_Model {
     $vSql .= "        , bdp_descricao AS categoria ";
     $vSql .= "        , bdp_tipo AS tipo ";
     $vSql .= "        , ROUND(COALESCE(mdp_valor, 0), 2) AS previsto ";
-    $vSql .= "        , ROUND(SUM(COALESCE(lan_valor_pago, lan_valor)), 2) AS realizado ";
+    $vSql .= "        , ROUND(SUM(COALESCE(ld_valor, lan_valor_pago, lan_valor)), 2) AS realizado ";
     $vSql .= " FROM tb_base_despesa ";
-    $vSql .= " LEFT JOIN tb_lancamento ON (lan_categoria = bdp_id AND lan_tipo = 'D' AND EXTRACT(MONTH FROM lan_vencimento) = $vMesBase AND EXTRACT(YEAR FROM lan_vencimento) = $vAnoBase) ";
+    $vSql .= " LEFT JOIN tb_lancamento_despesa ON (ld_bdp_id = bdp_id) ";
+    $vSql .= " LEFT JOIN tb_lancamento ON (ld_lan_id = lan_id AND lan_tipo = 'D' AND EXTRACT(MONTH FROM lan_vencimento) = $vMesBase AND EXTRACT(YEAR FROM lan_vencimento) = $vAnoBase) ";
     $vSql .= " LEFT JOIN tb_meta_despesa ON (mdp_despesa = bdp_id AND mdp_mes = $vMesBase AND mdp_ano = $vAnoBase) ";
     $vSql .= " WHERE bdp_ativo = 1 ";
     $vSql .= " AND bdp_contabiliza = 1 ";
@@ -531,11 +543,13 @@ class Tb_Lancamento extends CI_Model {
     }
 
     $this->load->database();
-    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_parcela, lan_vencimento, lan_valor, lan_categoria, bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao, lan_confirmado");
+    $this->db->select("lan_id, lan_despesa, lan_tipo, lan_parcela, lan_vencimento, lan_valor, GROUP_CONCAT(bdp_id) AS categoria, GROUP_CONCAT(bdp_descricao) AS bdp_descricao, lan_pagamento, lan_valor_pago, lan_conta, con_nome, con_sigla, lan_observacao, lan_confirmado");
     $this->db->from("tb_lancamento");
-    $this->db->join("tb_base_despesa", "bdp_id = lan_categoria", "left");
+    $this->db->join("tb_lancamento_despesa", "ld_lan_id = lan_id", "left");
+    $this->db->join("tb_base_despesa", "bdp_id = ld_bdp_id", "left");
     $this->db->join("tb_conta", "con_id = lan_conta", "left");
     $this->db->where("lan_id", $lanId);
+    $this->db->group_by('lan_id');
     $query = $this->db->get();
 
     if($query->num_rows() > 0){
@@ -564,7 +578,7 @@ class Tb_Lancamento extends CI_Model {
       $arrLancamentoDados["lan_parcela"]    = $row->lan_parcela;
       $arrLancamentoDados["lan_vencimento"] = $row->lan_vencimento;
       $arrLancamentoDados["lan_valor"]      = $row->lan_valor;
-      $arrLancamentoDados["lan_categoria"]  = $row->lan_categoria;
+      $arrLancamentoDados["categoria"]      = $row->categoria;
       $arrLancamentoDados["bdp_descricao"]  = $row->bdp_descricao;
       $arrLancamentoDados["lan_pagamento"]  = $row->lan_pagamento;
       $arrLancamentoDados["lan_valor_pago"] = $row->lan_valor_pago;
@@ -616,13 +630,6 @@ class Tb_Lancamento extends CI_Model {
     if(!is_numeric($vValor) || (!$vValor > 0 && $vTipo != "T")){
       $arrRet["erro"] = true;
       $arrRet["msg"]  = "Por favor, informe um valor válido!";
-      return $arrRet;
-    }
-
-    $vCategoria = isset($arrLancamentoDados["lan_categoria"]) ? $arrLancamentoDados["lan_categoria"]: "";
-    if(!is_numeric($vCategoria)){
-      $arrRet["erro"] = true;
-      $arrRet["msg"]  = "Por favor, informe a categoria do lançamento!";
       return $arrRet;
     }
 
@@ -678,7 +685,6 @@ class Tb_Lancamento extends CI_Model {
     $vParcela    = isset($arrLancamentoDados["lan_parcela"]) && $arrLancamentoDados["lan_parcela"] != "" ? $arrLancamentoDados["lan_parcela"]: null;
     $vVencimento = isset($arrLancamentoDados["lan_vencimento"]) && strlen($arrLancamentoDados["lan_vencimento"]) == 10 ? $arrLancamentoDados["lan_vencimento"]: null;
     $vValor      = isset($arrLancamentoDados["lan_valor"]) ? $arrLancamentoDados["lan_valor"]: null;
-    $vCategoria  = isset($arrLancamentoDados["lan_categoria"]) && $arrLancamentoDados["lan_categoria"] > 0 ? $arrLancamentoDados["lan_categoria"]: null;
     $vPagamento  = isset($arrLancamentoDados["lan_pagamento"]) && strlen($arrLancamentoDados["lan_pagamento"]) == 10 ? $arrLancamentoDados["lan_pagamento"]: null;
     $vValorPago  = isset($arrLancamentoDados["lan_valor_pago"]) ? $arrLancamentoDados["lan_valor_pago"]: null;
     $vConta      = isset($arrLancamentoDados["lan_conta"]) && $arrLancamentoDados["lan_conta"] > 0 ? $arrLancamentoDados["lan_conta"]: null;
@@ -691,7 +697,6 @@ class Tb_Lancamento extends CI_Model {
       'lan_parcela'    => $vParcela,
       'lan_vencimento' => $vVencimento,
       'lan_valor'      => $vValor,
-      'lan_categoria'  => $vCategoria,
       'lan_pagamento'  => $vPagamento,
       'lan_valor_pago' => $vValorPago,
       'lan_conta'      => $vConta,
@@ -792,13 +797,6 @@ class Tb_Lancamento extends CI_Model {
       return $arrRet;
     }
 
-    $vCategoria = isset($arrLancamentoDados["lan_categoria"]) ? $arrLancamentoDados["lan_categoria"]: "";
-    if(!is_numeric($vCategoria)){
-      $arrRet["erro"] = true;
-      $arrRet["msg"]  = "Por favor, informe a categoria do lançamento!";
-      return $arrRet;
-    }
-
     $vPagamento = (isset($arrLancamentoDados["lan_pagamento"])) ? $arrLancamentoDados["lan_pagamento"]: "";
     if($vPagamento != ""){
       $isVctoValid = isValidDate($vPagamento, "Y-m-d");
@@ -850,7 +848,6 @@ class Tb_Lancamento extends CI_Model {
     $vParcela    = isset($arrLancamentoDados["lan_parcela"]) && $arrLancamentoDados["lan_parcela"] != "" ? $arrLancamentoDados["lan_parcela"]: null;
     $vVencimento = isset($arrLancamentoDados["lan_vencimento"]) && strlen($arrLancamentoDados["lan_vencimento"]) == 10 ? $arrLancamentoDados["lan_vencimento"]: null;
     $vValor      = isset($arrLancamentoDados["lan_valor"]) && $arrLancamentoDados["lan_valor"] > 0 ? $arrLancamentoDados["lan_valor"]: null;
-    $vCategoria  = isset($arrLancamentoDados["lan_categoria"]) && $arrLancamentoDados["lan_categoria"] > 0 ? $arrLancamentoDados["lan_categoria"]: null;
     $vPagamento  = isset($arrLancamentoDados["lan_pagamento"]) && strlen($arrLancamentoDados["lan_pagamento"]) == 10 ? $arrLancamentoDados["lan_pagamento"]: null;
     $vValorPago  = isset($arrLancamentoDados["lan_valor_pago"]) && $arrLancamentoDados["lan_valor_pago"] >= 0 ? $arrLancamentoDados["lan_valor_pago"]: null;
     $vConta      = isset($arrLancamentoDados["lan_conta"]) && $arrLancamentoDados["lan_conta"] > 0 ? $arrLancamentoDados["lan_conta"]: null;
@@ -864,7 +861,6 @@ class Tb_Lancamento extends CI_Model {
     $Lancamento["lan_parcela"]    = $vParcela;
     $Lancamento["lan_vencimento"] = $vVencimento;
     $Lancamento["lan_valor"]      = $vValor;
-    $Lancamento["lan_categoria"]  = $vCategoria;
     $Lancamento["lan_pagamento"]  = $vPagamento;
     $Lancamento["lan_valor_pago"] = $vValorPago;
     $Lancamento["lan_conta"]      = $vConta;
@@ -962,7 +958,7 @@ class Tb_Lancamento extends CI_Model {
     $LancamentoDe = [];
     $LancamentoDe["lan_despesa"]    = "Transf. De $ContaDescDe";
     $LancamentoDe["lan_tipo"]       = "T";
-    $LancamentoDe["lan_categoria"]  = 40; // transferencia
+    // transferencia (id 40) - add tabela TODO
     $LancamentoDe["lan_vencimento"] = $vVencimento;
     $LancamentoDe["lan_valor"]      = $vValor;
     $LancamentoDe["lan_pagamento"]  = $vVencimento;
@@ -977,7 +973,7 @@ class Tb_Lancamento extends CI_Model {
     $LancamentoPara = [];
     $LancamentoPara["lan_despesa"]    = "Transf. Para $ContaDescPara";
     $LancamentoPara["lan_tipo"]       = "T";
-    $LancamentoPara["lan_categoria"]  = 40; // transferencia
+    // transferencia (id 40) - add tabela TODO
     $LancamentoPara["lan_vencimento"] = $vVencimento;
     $LancamentoPara["lan_valor"]      = "-" . $vValor;
     $LancamentoPara["lan_pagamento"]  = $vVencimento;

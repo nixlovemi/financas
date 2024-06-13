@@ -28,7 +28,7 @@ $arrConta   = isset($arrConta) ? $arrConta: array();
               <label class="control-label">Valor</label>
               <div class="controls">
                 <div class="input-prepend">
-                  <span class="add-on">R$</span>
+                  <span class="add-on"><?=CURRENCY_SYMBOL?></span>
                   <input class="span10 mask_moeda" type="text" name="tValor" id="tValor" value="" />
                 </div>
               </div>
