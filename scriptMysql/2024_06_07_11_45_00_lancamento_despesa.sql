@@ -1,3 +1,10 @@
+CREATE TABLE `tb_lancamento_despesa` (
+  `ld_id` int(11) NOT NULL,
+  `ld_lan_id` int(11) NOT NULL,
+  `ld_bdp_id` int(11) NOT NULL,
+  `ld_valor` double NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=4121 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 ALTER TABLE `tb_lancamento_despesa`
   ADD PRIMARY KEY (`ld_id`),
   ADD KEY `fk_ld_lan_id` (`ld_lan_id`),
