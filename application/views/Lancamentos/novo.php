@@ -13,6 +13,7 @@ $editar      = isset($editar) ? $editar: false;
 $strReadyonly = ($detalhes) ? " readonly ": "";
 
 $vLanId         = isset($Lancamento["lan_id"]) ? $Lancamento["lan_id"]: "";
+$vLanParcela    = isset($Lancamento["lan_parcela"]) ? $Lancamento["lan_parcela"]: "";
 $vLanDespesa    = isset($Lancamento["lan_despesa"]) ? $Lancamento["lan_despesa"]: "";
 $vLanTipo       = isset($Lancamento["lan_tipo"]) ? $Lancamento["lan_tipo"]: "";
 $vLanCompra     = isset($Lancamento["lan_compra"]) && strlen($Lancamento["lan_compra"]) == 10 ? date("d/m/Y", strtotime($Lancamento["lan_compra"])): "";
@@ -59,13 +60,19 @@ if($editar){
             }
             ?>
             <div class="control-group">
-              <label class="control-label">Descrição</label>
+              <label class="control-label">Descrição *</label>
               <div class="controls">
-                <input <?php echo $strReadyonly; ?> value="<?php echo $vLanDespesa; ?>" class="span10" type="text" id="lanDespesa" name="lanDespesa" />
+                <input <?php echo $strReadyonly; ?> value="<?php echo $vLanDespesa; ?>" class="span10" type="text" id="lanDespesa" name="lanDespesa" maxlength="60" />
               </div>
             </div>
             <div class="control-group">
-              <label class="control-label">Tipo</label>
+              <label class="control-label">Parcela</label>
+              <div class="controls">
+                <input <?php echo $strReadyonly; ?> value="<?php echo $vLanParcela; ?>" class="span10" type="text" id="lanParcela" name="lanParcela" maxlength="12" />
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label">Tipo *</label>
               <div class="controls">
                 <?php
                 $arrTiposId  = array("D", "R");
@@ -85,19 +92,19 @@ if($editar){
             </div>
 
             <div class="control-group">
-              <label class="control-label">Dt Compra (Opcional)</label>
+              <label class="control-label">Dt Compra</label>
               <div class="controls">
                 <input value="<?php echo $vLanCompra; ?>" class="span10 mask_datepicker" type="text" id="lanCompra" name="lanCompra" />
               </div>
             </div>
             <div class="control-group">
-              <label class="control-label">Vencimento</label>
+              <label class="control-label">Vencimento *</label>
               <div class="controls">
                 <input value="<?php echo $vLanVencimento; ?>" class="span10 mask_datepicker" type="text" id="lanVencimento" name="lanVencimento" />
               </div>
             </div>
             <div class="control-group">
-              <label class="control-label">Valor</label>
+              <label class="control-label">Valor *</label>
               <div class="controls">
                 <div class="input-prepend">
                   <span class="add-on"><?=CURRENCY_SYMBOL?></span>
@@ -121,7 +128,7 @@ if($editar){
               </div>
             </div>
             <div class="control-group">
-              <label class="control-label">Categoria</label>
+              <label class="control-label">Categoria *</label>
               <div class="controls">
                 <a id="btn-nova-linha" style="margin-bottom:8px;" class="btn btn-small btn-success" href="javascript:;">Nova linha</a>
 
@@ -134,7 +141,6 @@ if($editar){
                     </tr>
                   </thead>
                   <tbody>
-                    
                       <?php
                       $i = 0;
                       do {

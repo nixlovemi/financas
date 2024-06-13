@@ -63,6 +63,7 @@ class Lancamentos extends MY_Controller {
     $arrRet["msg"]  = "";
 
     // variaveis ============
+    $lanParcela    = ($this->input->post('lanParcela') != "") ? $this->input->post('lanParcela'): null;
     $lanDespesa    = ($this->input->post('lanDespesa') != "") ? $this->input->post('lanDespesa'): null;
     $lanTipo       = ($this->input->post('lanTipo') != "") ? $this->input->post('lanTipo'): null;
     $lanCompra     = (strlen($this->input->post('lanCompra')) == 10) ? acerta_data($this->input->post('lanCompra')): null;
@@ -83,6 +84,7 @@ class Lancamentos extends MY_Controller {
     // ======================
 
     $Lancamento = [];
+    $Lancamento["lan_parcela"]    = $lanParcela;
     $Lancamento["lan_despesa"]    = $lanDespesa;
     $Lancamento["lan_tipo"]       = $lanTipo;
     $Lancamento["lan_compra"]     = $lanCompra;
@@ -268,6 +270,7 @@ class Lancamentos extends MY_Controller {
 
     // variaveis ============
     $lanId         = $this->input->post('lanId') > 0 ? $this->input->post('lanId'): -1;
+    $lanParcela    = ($this->input->post('lanParcela') != "") ? $this->input->post('lanParcela'): null;
     $lanDespesa    = ($this->input->post('lanDespesa') != "") ? $this->input->post('lanDespesa'): null;
     $lanTipo       = ($this->input->post('lanTipo') != "") ? $this->input->post('lanTipo'): null;
     $lanCompra     = (strlen($this->input->post('lanCompra')) == 10) ? acerta_data($this->input->post('lanCompra')): null;
@@ -298,6 +301,7 @@ class Lancamentos extends MY_Controller {
       $Lancamento = $retLancamento["arrLancamentoDados"];
     }
 
+    $Lancamento["lan_parcela"]    = $lanParcela;
     $Lancamento["lan_despesa"]    = $lanDespesa;
     $Lancamento["lan_tipo"]       = $lanTipo;
     $Lancamento["lan_compra"]     = $lanCompra;
