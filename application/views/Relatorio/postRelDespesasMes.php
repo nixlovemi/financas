@@ -84,7 +84,7 @@ foreach ($queryArr as $categoryStr => $row) {
     }
 
     // TOTAL ROW
-    $fTotal = (!$downloadXls) ? CURRENCY_SYMBOL . number_format($ldValor, 2, ',', '.'): $ldValor;
+    $fTotal = (!$downloadXls) ? CURRENCY_SYMBOL . number_format($total, 2, ',', '.'): $total;
 
     $htmlTable .= '  <tr style="font-weight:bold;">';
     $htmlTable .= '    <td colspan="5">TOTAIS:</td>';
